@@ -1938,6 +1938,7 @@ function renderPreview(){
     const sc=Math.min((aW-2)/fW,(aH-2)/fH,1);
     const pW=Math.round(fW*sc), pH=Math.round(fH*sc);
     const sizeChanged=(cv.width!==pW||cv.height!==pH);
+    cv.style.filter='none';
     cv.width=pW; cv.height=pH;
     cv.style.display='block';
     const ctx=cv.getContext('2d');
@@ -1976,10 +1977,21 @@ function renderPreview(){
 
   const ctx=cv.getContext('2d');
   if(G.showingOriginal){
+    cv.style.filter='none';
     ctx.filter='none'; ctx.drawImage(img,0,0,W,H);
   } else {
-    ctx.filter=cssFilter(getFileSettings(f));
-    ctx.drawImage(img,0,0,W,H); ctx.filter='none';
+    const filterStr=cssFilter(getFileSettings(f));
+    // Use CSS filter on canvas element (works on all browsers incl. WebKit/iOS)
+    // ctx.filter is NOT supported on Safari/iOS Chrome (WebKit engine)
+    if(isMob){
+      cv.style.filter=filterStr;
+      ctx.filter='none';
+    } else {
+      cv.style.filter='none';
+      ctx.filter=filterStr;
+    }
+    ctx.drawImage(img,0,0,W,H);
+    ctx.filter='none';
     if(needsPx(getFileSettings(f))){const id=ctx.getImageData(0,0,W,H);processPixels(id.data,getFileSettings(f),W,H);ctx.putImageData(id,0,0);}
     drawOverlays(ctx,W,H);
   }
