@@ -1,0 +1,21 @@
+{
+  "name": "HL Express by Witoon James Studio",
+  "short_name": "HL Express",
+  "description": "Batch Edit and Photo Processing App",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080809",
+  "theme_color": "#d4872a",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
