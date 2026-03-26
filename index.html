@@ -154,7 +154,7 @@ main{flex:1;display:flex;overflow:hidden}
 }
 @media(min-width:1367px){#mob{display:none!important}}
 /* Shell */
-#mob{display:none;flex-direction:column;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
+#mob{display:none;flex-direction:column;height:100vh;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
 /* Header */
 #mob-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;flex-shrink:0}
 #mob-hd-title{font-size:17px;font-weight:600;letter-spacing:-.3px}
@@ -793,6 +793,25 @@ const G={
   activePresetId:1,    // preset shown in panel
 };
 let fid=0,lid=0,pid=0;
+// ── Safe mobile callbacks — called from original functions directly ──
+// Instead of reassigning function declarations (unreliable on Safari/strict),
+// we call mob hooks FROM the original functions via a registry object.
+const MOB_CB={
+  afterSchedRender: function(){},
+  afterSetActive:   function(id){ if(mIsMobile()){ mobRenderCanvas(); if(mobView==='lib') mobRenderLib(); } },
+  afterRenderFS:    function(){
+    if(mIsMobile()){
+      if(mobView==='lib') mobRenderLib();
+      const expBtn=document.getElementById('mob-nav-exp');
+      if(expBtn) expBtn.classList.toggle('on',G.files.some(f=>f.status==='ready'));
+      const cnt=document.getElementById('mob-hd-left');
+      if(cnt) cnt.textContent=G.files.length?G.files.length+' files':'';
+    }
+  },
+  afterSyncUI: function(){ if(mIsMobile()) mobSyncSliders(); },
+};
+
+
 
 function defSettings(){
   const s={filter:'normal',hdrMethod:'reinhard',hdrEnabled:false};
@@ -1355,6 +1374,7 @@ function setActive(id){
   document.getElementById('cvmeta').style.display='block';
   document.getElementById('zvbar').classList.add('show');
   schedRender();
+  MOB_CB.afterSetActive(id);
 }
 
 /* ══ PRESET HELPERS ═════════════════════════════════════════════════ */
@@ -1741,6 +1761,7 @@ function syncUI(){
   document.querySelectorAll('.mbtn[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===(s.hdrMethod||'reinhard')));
   document.querySelectorAll('.fi').forEach(el=>el.classList.toggle('on',el.dataset.fid===(s.filter||'normal')));
   renderPresetBar();
+  MOB_CB.afterSyncUI();
 }
 
 /* ══ SLIDER CALLBACKS ═══════════════════════════════════════════════ */
@@ -1835,10 +1856,10 @@ function renderFS(){
       +`<div class="tirow"><span class="tiname">${f.name.replace(/\.[^.]+$/,'')}</span><div class="dot ${f.status}" style="${dotStyle}"></div></div>`;
     list.appendChild(d);
   });
+  MOB_CB.afterRenderFS();
 }
 
 function removeFile(id){
-  G.files=G.files.filter(f=>f.id!==id);
   G.selected.delete(id);
   if(G.activeId===id){
     G.activeId=null;
@@ -1874,7 +1895,7 @@ function clearAll(){
 }
 
 /* ══ RENDER ══════════════════════════════════════════════════════════ */
-function schedRender(){clearTimeout(G.rt);G.rt=setTimeout(()=>renderPreview(),22);}
+function schedRender(){clearTimeout(G.rt);G.rt=setTimeout(()=>{renderPreview();},22);}
 
 function showOriginal(on){
   G.showingOriginal=on;
@@ -1900,8 +1921,17 @@ function renderPreview(){
   const area = isMob ? document.getElementById('mob-canvas')
                      : document.getElementById('cva');
   if(!cv||!area) return;
-  const aW = area.clientWidth  - (isMob?0:32);
-  const aH = area.clientHeight - (isMob?0:48);
+
+  // Fallback: if area has no computed size yet (iPadOS dvh issue), use window size
+  let aW = area.clientWidth  - (isMob?0:32);
+  let aH = area.clientHeight - (isMob?0:48);
+  if(isMob && (aW<=0 || aH<=0)){
+    // mob-canvas is inside fixed #mob which fills viewport
+    // estimate from window size minus header + cats + panel + nav
+    aW = window.innerWidth - 28; // 14px margin each side
+    aH = window.innerHeight - 44 - 70 - 160 - 60; // hd+cats+panel+nav approximate
+    if(aH <= 0) aH = Math.round(window.innerHeight * 0.45);
+  }
 
   if(G.frameMode&&!G.activeId){
     const {w:fW,h:fH}=getFCDims();
@@ -3027,38 +3057,6 @@ function mobMirrorCanvas(){
 
 
 // ── Mobile hooks — ใช้ callback แทน function redeclaration (ป้องกัน hoisting bug) ──
-const _mob_hooks={
-  schedRender: schedRender,
-  setActive:   setActive,
-  renderFS:    renderFS,
-  syncUI:      syncUI,
-};
-
-schedRender = function(){
-  _mob_hooks.schedRender();
-};
-
-setActive = function(id){
-  _mob_hooks.setActive(id);
-  if(mIsMobile()){ mobRenderCanvas(); if(mobView==='lib') mobRenderLib(); }
-};
-
-renderFS = function(){
-  _mob_hooks.renderFS();
-  if(mIsMobile()){
-    if(mobView==='lib') mobRenderLib();
-    const expBtn=document.getElementById('mob-nav-exp');
-    if(expBtn) expBtn.classList.toggle('on',G.files.some(f=>f.status==='ready'));
-    const cnt=document.getElementById('mob-hd-left');
-    if(cnt) cnt.textContent=G.files.length?G.files.length+' files':'';
-  }
-};
-
-syncUI = function(){
-  _mob_hooks.syncUI();
-  if(mIsMobile()) mobSyncSliders();
-};
-
 // Init
 setTimeout(initMobile,150);
 
