@@ -16,6 +16,7 @@
 
   gtag('config', 'G-70BXB58SCD');
 </script>
+<script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -24,7 +25,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -148,11 +148,11 @@ main{flex:1;display:flex;overflow:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ══ MOBILE LAYOUT (≤768px) — iOS LR-style ══════════════════════════ */
-@media(max-width:1024px){
+@media(max-width:1366px){
   header,#fs,#rh-left,#rh-right,#ctrl,#bar,main{display:none!important}
   #mob{display:flex!important}
 }
-@media(min-width:1025px){#mob{display:none!important}}
+@media(min-width:1367px){#mob{display:none!important}}
 /* Shell */
 #mob{display:none;flex-direction:column;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
 /* Header */
@@ -2507,7 +2507,7 @@ renderFS();
 renderPresetBar();
 
 /* ══ MOBILE UI ══════════════════════════════════════════════════════ */
-const IS_MOBILE=()=>window.innerWidth<=1024;
+const IS_MOBILE=()=>window.innerWidth<=1366;
 
 // Category → sliders map
 const MOB_CATS={
