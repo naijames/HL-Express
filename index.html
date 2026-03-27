@@ -2051,30 +2051,24 @@ function cssFilter(s){
 
 function renderPreview(){
   (async()=>{
-  // Mobile: render to mob-cv directly (maincanvas is in hidden <main>)
   const isMob = mIsMobile();
   const cv   = isMob ? document.getElementById('mob-cv')
                      : document.getElementById('maincanvas');
   const area = isMob ? document.getElementById('mob-canvas')
                      : document.getElementById('cva');
   if(!cv||!area) return;
-
-  // Fallback: if area has no computed size yet (iPadOS dvh issue), use window size
   let aW = area.clientWidth  - (isMob?0:32);
   let aH = area.clientHeight - (isMob?0:48);
-  if(isMob && (aW<=0 || aH<=0)){
-    // mob-canvas is inside fixed #mob which fills viewport
-    // estimate from window size minus header + cats + panel + nav
-    aW = window.innerWidth - 28; // 14px margin each side
-    aH = window.innerHeight - 44 - 70 - 160 - 60; // hd+cats+panel+nav approximate
-    if(aH <= 0) aH = Math.round(window.innerHeight * 0.45);
+  // Fallback for iPadOS dvh issue
+  if(isMob && (aW<=0||aH<=0)){
+    aW = window.innerWidth - 28;
+    aH = Math.round(window.innerHeight * 0.45);
   }
 
   if(G.frameMode&&!G.activeId){
     const {w:fW,h:fH}=getFCDims();
     const sc=Math.min((aW-2)/fW,(aH-2)/fH,1);
     const pW=Math.round(fW*sc), pH=Math.round(fH*sc);
-    const sizeChanged=(cv.width!==pW||cv.height!==pH);
     cv.style.filter='none';
     cv.width=pW; cv.height=pH;
     cv.style.display='block';
@@ -2089,7 +2083,7 @@ function renderPreview(){
     if(!isMob){ updateFCLabel(); }
     const metaEl=isMob?document.getElementById('mob-cvmeta'):document.getElementById('cvmeta');
     if(metaEl) metaEl.textContent=`Frame Creator — ${fW} × ${fH} px · PNG`;
-    if(!isMob){ if(sizeChanged||G.zoom.scale===0) zoomFit(); else applyZoom(); }
+    if(!isMob){ if(cv.width&&G.zoom.scale===0) zoomFit(); else applyZoom(); }
     else { cv.style.left=Math.round((aW-pW)/2)+'px'; cv.style.top=Math.round((aH-pH)/2)+'px'; }
     return;
   }
@@ -2099,16 +2093,6 @@ function renderPreview(){
   try{ img=await ensureImg(f); } catch(e){ return; }
   if(G.activeId!==f.id) return;
 
-  // On mobile: resize container height to match image ratio
-  if(isMob && area){
-    const imgRatio=f.h/f.w;
-    const maxH=Math.round(window.innerHeight*0.52);
-    const idealH=Math.round(aW*imgRatio);
-    const containerH=Math.min(idealH,maxH);
-    if(containerH>0){ area.style.height=containerH+'px'; aH=containerH; }
-  }
-
-  // Simple scale to fit container
   const sc=Math.min(aW/f.w, aH/f.h, 1);
   const W=Math.max(1,Math.round(f.w*sc));
   const H=Math.max(1,Math.round(f.h*sc));
@@ -2118,8 +2102,6 @@ function renderPreview(){
   // Center on mobile
   if(isMob){
     cv.style.position='absolute';
-    cv.style.transform='';
-    cv.style.transformOrigin='';
     cv.style.left=Math.round((aW-W)/2)+'px';
     cv.style.top =Math.round((aH-H)/2)+'px';
   }
@@ -2130,8 +2112,7 @@ function renderPreview(){
     ctx.filter='none'; ctx.drawImage(img,0,0,W,H);
   } else {
     const filterStr=cssFilter(getFileSettings(f));
-    // Use CSS filter on canvas element (works on all browsers incl. WebKit/iOS)
-    // ctx.filter is NOT supported on Safari/iOS Chrome (WebKit engine)
+    // ctx.filter not supported on WebKit (iOS/iPadOS) — use CSS filter on canvas instead
     if(isMob){
       cv.style.filter=filterStr;
       ctx.filter='none';
@@ -2139,8 +2120,7 @@ function renderPreview(){
       cv.style.filter='none';
       ctx.filter=filterStr;
     }
-    ctx.drawImage(img,0,0,W,H);
-    ctx.filter='none';
+    ctx.drawImage(img,0,0,W,H); ctx.filter='none';
     if(needsPx(getFileSettings(f))){const id=ctx.getImageData(0,0,W,H);processPixels(id.data,getFileSettings(f),W,H);ctx.putImageData(id,0,0);}
     drawOverlays(ctx,W,H);
   }
@@ -2151,10 +2131,9 @@ function renderPreview(){
     metaEl.style.display='block';
   }
 
-  if(!isMob){ if(sizeChanged||G.zoom.scale===0) zoomFit(); else applyZoom(); }
+  if(!isMob){ if(W&&G.zoom.scale===0) zoomFit(); else applyZoom(); }
   })();
 }
-
 function needsPx(s){
   return s.highlights||s.shadows||s.whites||s.blacks||
     s.hdrEnabled||
