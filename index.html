@@ -3249,11 +3249,11 @@ function mobSyncSliders(){
 // Reset current photo to default preset (no confirm)
 function mobResetCurrent(){
   const f=G.files.find(f=>f.id===G.activeId); if(!f) return;
-  const def=G.presets[0];
-  f.presetId=def.id;
-  G.activePresetId=def.id;
+  // Reset the active preset's settings to defaults
+  const p=getActivePreset(); if(!p) return;
+  p.settings=defSettings();
   syncUI(); mobBuildPanel(mobCat); schedRender();
-  toast('Reset ภาพนี้กลับ Default');
+  toast('Reset ภาพนี้กลับค่าเริ่มต้น');
 }
 
 function mobApplyAll(){
