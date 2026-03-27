@@ -2818,6 +2818,7 @@ function mobBuildPanel(cat){
 
 function mobBuildPanelInto(cat, body){
     // Build frame panel without nested template literals
+  if(cat==='frame'){
     const hasL=!!G.frameLImg, hasP=!!G.framePImg;
     function makeFrameRow(ori, has, thumbSrc, fname, label){
       const wrap=document.createElement('div');
@@ -2866,6 +2867,8 @@ function mobBuildPanelInto(cat, body){
     hint.innerHTML='ถ้าใส่แค่อันเดียว → ใช้กับทุก orientation<br>ภาพตั้ง/นอนจะเลือก frame ให้อัตโนมัติ';
     body.appendChild(hint);
     return;
+
+  }
 
   if(cat==='creator'){
     var dimInfo=getFCDims();
