@@ -148,11 +148,11 @@ main{flex:1;display:flex;overflow:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ══ MOBILE LAYOUT (≤768px) — iOS LR-style ══════════════════════════ */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:1366px){
   header,#fs,#rh-left,#rh-right,#ctrl,#bar,main{display:none!important}
   #mob{display:flex!important}
 }
-@media(pointer:fine){#mob{display:none!important}}
+@media(pointer:fine) and (min-width:1367px){#mob{display:none!important}}
 /* Shell */
 #mob{display:none;flex-direction:column;height:100vh;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
 /* Header */
@@ -2698,7 +2698,7 @@ renderFS();
 renderPresetBar();
 
 /* ══ MOBILE UI ══════════════════════════════════════════════════════ */
-const IS_MOBILE=()=>window.matchMedia("(pointer:coarse)").matches;
+const IS_MOBILE=()=>window.matchMedia("(pointer:coarse)").matches||window.innerWidth<=1366;
 
 // Category → sliders map
 const MOB_CATS={
