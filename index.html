@@ -3184,8 +3184,7 @@ function mobBuildPanelInto(cat, body){
       trackFill.style.width=pct+'%';
       thumb.style.left=pct+'%';
       var s=(vv>0?'+':'')+vv+unit;
-      var el=document.getElementById('mob-v-'+id);
-      if(el) el.textContent=s;
+      val.textContent=s; // use closure ref directly — always the right element
     }
     updateTrack(v);
 
