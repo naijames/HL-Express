@@ -3425,11 +3425,16 @@ function isLandscape(){
 
 function initLsPanel(){
   if(!isLandscape()) return;
-  var panel=document.getElementById('mob-ls-panel');
-  panel.style.display='flex';
-  // Build cats
-  buildLsCats();
-  buildLsPanel(mobCat);
+  try{
+    var panel=document.getElementById('mob-ls-panel');
+    if(!panel) return;
+    panel.style.display='flex';
+    buildLsCats();
+    // Don't call buildLsPanel here — mobBuildPanel already called in initMobile
+    // Just populate the body
+    var lsBody=document.getElementById('mob-ls-body');
+    if(lsBody){ lsBody.innerHTML=''; }
+  }catch(e){ console.warn('initLsPanel error:',e); }
 }
 
 function hideLsPanel(){
@@ -3454,33 +3459,35 @@ function openLsPanel(){
 
 // Build category tabs inside landscape panel
 function buildLsCats(){
-  var catsEl=document.getElementById('mob-ls-cats');
-  if(!catsEl) return;
-  catsEl.innerHTML='';
-  var cats=[
-    {cat:'exposure',icon:'☀️',lbl:'Exp'},
-    {cat:'tone',icon:'📊',lbl:'Tone'},
-    {cat:'detail',icon:'🔍',lbl:'Detail'},
-    {cat:'color',icon:'🎨',lbl:'Color'},
-    {cat:'frame',icon:'🖼',lbl:'Frame'},
-    {cat:'creator',icon:'✏️',lbl:'Creator'},
-    {cat:'preset',icon:'💾',lbl:'Preset'},
-  ];
-  cats.forEach(function(c){
-    var btn=document.createElement('button');
-    btn.className='mob-cat'+(c.cat===mobCat?' on':'');
-    btn.dataset.cat=c.cat;
-    btn.style.cssText='min-width:52px;height:52px;padding:0 6px';
-    btn.innerHTML='<span class="mob-cat-icon" style="font-size:18px">'+c.icon+'</span><span class="mob-cat-lbl" style="font-size:10px">'+c.lbl+'</span>';
-    btn.onclick=function(){
-      mobCat=c.cat;
-      document.querySelectorAll('#mob-ls-cats .mob-cat').forEach(function(b){b.classList.remove('on');});
-      btn.classList.add('on');
-      buildLsPanel(c.cat);
-      if(!lsPanelOpen) openLsPanel();
-    };
-    catsEl.appendChild(btn);
-  });
+  try{
+    var catsEl=document.getElementById('mob-ls-cats');
+    if(!catsEl) return;
+    catsEl.innerHTML='';
+    var cats=[
+      {cat:'exposure',icon:'☀️',lbl:'Exp'},
+      {cat:'tone',icon:'📊',lbl:'Tone'},
+      {cat:'detail',icon:'🔍',lbl:'Detail'},
+      {cat:'color',icon:'🎨',lbl:'Color'},
+      {cat:'frame',icon:'🖼',lbl:'Frame'},
+      {cat:'creator',icon:'✏️',lbl:'Creator'},
+      {cat:'preset',icon:'💾',lbl:'Preset'},
+    ];
+    cats.forEach(function(c){
+      var btn=document.createElement('button');
+      btn.className='mob-cat'+(c.cat===mobCat?' on':'');
+      btn.dataset.cat=c.cat;
+      btn.style.cssText='min-width:52px;height:52px;padding:0 6px';
+      btn.innerHTML='<span class="mob-cat-icon" style="font-size:18px">'+c.icon+'</span><span class="mob-cat-lbl" style="font-size:10px">'+c.lbl+'</span>';
+      btn.onclick=function(){
+        mobCat=c.cat;
+        document.querySelectorAll('#mob-ls-cats .mob-cat').forEach(function(b){b.classList.remove('on');});
+        btn.classList.add('on');
+        buildLsPanel(c.cat);
+        if(!lsPanelOpen) openLsPanel();
+      };
+      catsEl.appendChild(btn);
+    });
+  }catch(e){ console.warn('buildLsCats:',e); }
 }
 
 // Build slider content in landscape panel body
