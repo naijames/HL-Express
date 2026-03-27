@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>HL Express</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#d4872a">
@@ -156,12 +156,32 @@ main{flex:1;display:flex;overflow:hidden}
 /* Shell */
 #mob{display:none;flex-direction:column;height:100vh;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
 /* Header */
-#mob-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;flex-shrink:0}
+#mob-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;flex-shrink:0}
 #mob-hd-title{font-size:17px;font-weight:600;letter-spacing:-.3px}
-#mob-hd-done{font-size:15px;font-weight:500;color:var(--acc);background:none;border:none;cursor:pointer}
-#mob-hd-left{width:60px;font-size:12px;color:var(--tx3);font-family:var(--mono)}
+#mob-hd-reset{font-size:13px;font-weight:500;color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;padding:4px 0;min-width:60px}
+#mob-hd-applyall{font-size:13px;font-weight:600;color:var(--acc);background:none;border:none;cursor:pointer;padding:4px 0;min-width:60px;text-align:right}
+/* Export Sheet */
+#mob-export-sheet{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);align-items:flex-end}
+#mob-export-sheet.show{display:flex}
+#mob-export-inner{background:#1c1c1e;border-radius:20px 20px 0 0;width:100%;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto}
+.mob-exp-title{font-size:17px;font-weight:600;color:#fff;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.mob-exp-sec{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:8px;margin-top:14px}
+.mob-exp-radio{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.mob-exp-radio label{display:flex;align-items:center;gap:10px;font-size:15px;color:#fff;cursor:pointer}
+.mob-exp-radio input[type=radio]{width:18px;height:18px;accent-color:var(--acc)}
+.mob-exp-sizebtn{height:38px;border-radius:9px;border:1px solid #3a3a3c;background:#2c2c2e;color:#fff;font-size:14px;cursor:pointer;flex:1}
+.mob-exp-sizebtn.on{border-color:var(--acc);background:rgba(212,135,42,.15);color:var(--acc)}
+#mob-exp-custsize{display:none;align-items:center;gap:8px;margin-top:8px}
+#mob-exp-custsize.show{display:flex}
+#mob-exp-custinp{flex:1;height:38px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:9px;color:#fff;font-size:15px;text-align:center;outline:none;padding:0 8px}
+#mob-exp-go{width:100%;height:48px;border-radius:14px;border:none;background:var(--acc);color:#180d00;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
+#mob-exp-go:disabled{opacity:.4}
+#mob-exp-progress{display:none;margin-top:14px}
+.mob-exp-progbar-wrap{height:6px;background:#3a3a3c;border-radius:3px;overflow:hidden;margin-bottom:8px}
+.mob-exp-progbar{height:100%;background:var(--acc);border-radius:3px;width:0;transition:width .3s}
+#mob-exp-status{font-size:13px;color:rgba(255,255,255,.6);text-align:center}
 /* Canvas */
-#mob-canvas{flex:1;position:relative;overflow:hidden;background:#111;margin:0 14px 6px;border-radius:16px;min-height:0}
+#mob-canvas{flex:1;position:relative;overflow:hidden;background:#111;margin:0 14px 6px;border-radius:16px;min-height:0;touch-action:none;}
 #mob-canvas canvas{position:absolute;transform-origin:0 0}
 #mob-dropzone{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer}
 #mob-add-btn{width:100px;height:100px;border-radius:50%;background:#2c2c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer}
@@ -192,6 +212,9 @@ main{flex:1;display:flex;overflow:hidden}
 .mob-sl-lbl{font-size:16px;font-weight:500;color:#fff}
 .mob-sl-val{font-size:16px;font-weight:500;color:var(--acc);font-family:var(--mono)}
 .mob-sl{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:#3a3a3c;outline:none;cursor:pointer;touch-action:pan-x;}
+/* Export size buttons */
+.mob-exp-sizebtn{height:38px;border-radius:9px;border:1px solid #3a3a3c;background:#2c2c2e;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer}
+.mob-exp-sizebtn.on{border-color:var(--acc);background:rgba(212,135,42,.15);color:var(--acc);font-weight:600}
 .mob-sl::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .mob-sl::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--acc);cursor:pointer;border:none}
 /* Library grid */
@@ -540,12 +563,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
 
   <!-- Header -->
   <div id="mob-hd">
-    <div id="mob-hd-left" id="mob-pcnt"></div>
+    <button id="mob-hd-reset" onclick="mobResetCurrent()">Reset</button>
     <div id="mob-hd-title" style="display:flex;flex-direction:column;align-items:center;line-height:1.2">
       <span style="font-size:17px;font-weight:700">HL <span style="color:#ff9f0a">Express</span></span>
       <span style="font-size:9px;color:rgba(255,255,255,.4);font-weight:400">by Witoon James Studio</span>
     </div>
-    <button id="mob-hd-done" onclick="mobApplyAll()">Done</button>
+    <button id="mob-hd-applyall" onclick="mobApplyAll()">Apply All</button>
   </div>
 
   <!-- Canvas (Edit view) / Library grid -->
@@ -600,7 +623,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
     <div id="mob-panel-grip-row">
       <div id="mob-panel-grip"></div>
     </div>
-    <button id="mob-panel-reset" onclick="mobResetPreset()">Reset</button>
     <div id="mob-panel-body"></div>
   </div>
 
@@ -614,13 +636,60 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
       <span class="mob-nav-icon">🎚</span>
       <span class="mob-nav-lbl">Edit</span>
     </button>
-    <button class="mob-nav-btn" id="mob-nav-exp" onclick="batchExport()">
+    <button class="mob-nav-btn" id="mob-nav-exp" onclick="openMobExport()">
       <span class="mob-nav-icon">⬆</span>
       <span class="mob-nav-lbl">Export</span>
     </button>
   </div>
 
 
+</div>
+
+<!-- ══ MOBILE EXPORT SHEET ══════════════════════════════════════════ -->
+<div id="mob-export-sheet" onclick="if(event.target===this)closeMobExport()" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.65);align-items:flex-end">
+  <div id="mob-export-inner" style="background:#1c1c1e;border-radius:20px 20px 0 0;width:100%;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <span style="font-size:18px;font-weight:700;color:#fff">Export</span>
+      <button onclick="closeMobExport()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:26px;cursor:pointer;line-height:1;padding:0">×</button>
+    </div>
+    <!-- Scope -->
+    <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:8px">EXPORT SCOPE</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:12px;font-size:15px;color:#fff;cursor:pointer">
+        <input type="radio" name="mob-exp-scope" value="current" id="mob-exp-curr" checked style="width:18px;height:18px;accent-color:#ff9f0a">
+        ภาพนี้ใบเดียว
+      </label>
+      <label style="display:flex;align-items:center;gap:12px;font-size:15px;color:#fff;cursor:pointer">
+        <input type="radio" name="mob-exp-scope" value="all" id="mob-exp-all" style="width:18px;height:18px;accent-color:#ff9f0a">
+        ทั้งหมด <span id="mob-exp-allcount" style="color:rgba(255,255,255,.4);font-size:13px;margin-left:4px"></span>
+      </label>
+    </div>
+    <!-- Size -->
+    <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:8px">ขนาดรูป</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      <button class="mob-exp-sizebtn on" data-sz="orig"   onclick="mobExpSize(this)">Original</button>
+      <button class="mob-exp-sizebtn"    data-sz="2048"   onclick="mobExpSize(this)">2048</button>
+      <button class="mob-exp-sizebtn"    data-sz="1920"   onclick="mobExpSize(this)">1920</button>
+      <button class="mob-exp-sizebtn"    data-sz="custom" onclick="mobExpSize(this)">Custom</button>
+    </div>
+    <div id="mob-exp-custsize" style="display:none;align-items:center;gap:8px;margin-bottom:8px">
+      <input type="number" id="mob-exp-custinp" placeholder="px" min="100" max="9999" value="1500"
+        style="flex:1;height:38px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:9px;color:#fff;font-size:15px;text-align:center;outline:none;padding:0 8px">
+      <span style="font-size:13px;color:rgba(255,255,255,.4)">px (long side)</span>
+    </div>
+    <!-- Go -->
+    <button id="mob-exp-go" onclick="runMobExport()"
+      style="width:100%;height:50px;border-radius:14px;border:none;background:#ff9f0a;color:#180d00;font-size:17px;font-weight:700;cursor:pointer;margin-top:8px">
+      ⬇ Export
+    </button>
+    <!-- Progress -->
+    <div id="mob-exp-progress" style="display:none;margin-top:14px">
+      <div style="height:6px;background:#3a3a3c;border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div id="mob-exp-bar" style="height:100%;background:#ff9f0a;border-radius:3px;width:0;transition:width .25s"></div>
+      </div>
+      <div id="mob-exp-status" style="font-size:13px;color:rgba(255,255,255,.6);text-align:center"></div>
+    </div>
+  </div>
 </div>
 <div id="bar">
   <div class="barinfo" id="barinfo">Ready — drop images to begin</div>
@@ -1736,6 +1805,11 @@ async function applyImportedPreset(data){
   syncUI(); renderPresetBar(); renderFS(); schedRender();
   bar.textContent=`✅ Imported preset "${preset.name}"`;
   toast(`Imported "${preset.name}"`);
+  // Mobile: auto apply to all files
+  if(mIsMobile() && G.files.length>0){
+    applyPresetToAll();
+    toast(`Imported & applied "${preset.name}" to all ${G.files.length} files`);
+  }
 }
 
 // Base64 → Blob helper
@@ -2624,6 +2698,9 @@ function mobRenderLib(){
 /* ── Canvas preview ── */
 function mobRenderCanvas(){
   if(!mIsMobile()) return;
+  // Reset zoom when switching images
+  var cv2=document.getElementById('mob-cv');
+  if(cv2){ cv2.style.transform=''; cv2.style.transformOrigin=''; }
   const hasPic = G.activeId && G.files.length>0;
   document.getElementById('mob-dropzone').style.display = hasPic ? 'none' : 'flex';
   document.getElementById('mob-cv').style.display       = hasPic ? 'block' : 'none';
@@ -2937,69 +3014,134 @@ function mobBuildPanel(cat){
     var p=getActivePreset();
     var wrap=document.createElement('div'); wrap.style.marginBottom='14px';
     var ttl=document.createElement('div');
-    ttl.style.cssText='font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px';
-    ttl.textContent='ACTIVE PRESET'; wrap.appendChild(ttl);
+    ttl.style.cssText='font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;letter-spacing:.5px';
+    ttl.textContent='CURRENT PHOTO PRESET'; wrap.appendChild(ttl);
+    // Preset dropdown — auto-save on change
     var row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px';
+    row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:14px';
     var dot=document.createElement('div');
     dot.style.cssText='width:10px;height:10px;border-radius:50%;background:'+(p?p.color:'#888')+';flex-shrink:0';
     var sel=document.createElement('select');
     sel.id='mob-psel';
-    sel.style.cssText='flex:1;height:36px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:8px;color:#fff;font-size:14px;padding:0 10px';
+    sel.style.cssText='flex:1;height:40px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;color:#fff;font-size:15px;padding:0 12px';
     G.presets.forEach(function(pr){
       var opt=document.createElement('option');
       opt.value=pr.id;
       opt.selected=(pr.id===G.activePresetId);
-      var cnt=G.files.filter(function(f){return f.presetId===pr.id;}).length;
-      opt.textContent=pr.name+' ('+cnt+')';
+      opt.textContent=pr.name;
       sel.appendChild(opt);
     });
-    sel.onchange=function(){ switchPreset(this.value); mobBuildPanel('preset'); };
-    var addBtn=document.createElement('button');
-    addBtn.style.cssText='width:36px;height:36px;border-radius:8px;background:#2c2c2e;border:1px solid #3a3a3c;color:#ff9f0a;font-size:20px;cursor:pointer';
-    addBtn.textContent='+';
-    addBtn.onclick=function(){ newPreset(); mobBuildPanel('preset'); };
-    row.appendChild(dot); row.appendChild(sel); row.appendChild(addBtn);
+    sel.onchange=function(){
+      switchPreset(this.value);
+      // Update dot color
+      var np=getActivePreset();
+      if(np) dot.style.background=np.color;
+    };
+    row.appendChild(dot); row.appendChild(sel);
     wrap.appendChild(row);
-    var applyBtn=document.createElement('button');
-    applyBtn.style.cssText='width:100%;height:40px;border-radius:10px;background:#2c2c2e;border:1px solid #3a3a3c;color:#fff;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:8px';
-    applyBtn.textContent='Apply to all files';
-    applyBtn.onclick=function(){ applyPresetToAll(); mobBuildPanel('preset'); };
-    wrap.appendChild(applyBtn);
+    // Import / Export preset
     var grid=document.createElement('div');
     grid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px';
     var impBtn=document.createElement('button');
-    impBtn.style.cssText='height:40px;border-radius:10px;background:#2c2c2e;border:1px solid #3a3a3c;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer';
-    impBtn.textContent='Import';
-    impBtn.onclick=importPreset;
+    impBtn.style.cssText='height:42px;border-radius:10px;background:#2c2c2e;border:1px solid #3a3a3c;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer';
+    impBtn.textContent='⬆ Import';
+    impBtn.onclick=function(){
+      importPreset();
+      // applyImportedPreset will call applyPresetToAll after load
+    };
     var expBtn2=document.createElement('button');
-    expBtn2.style.cssText='height:40px;border-radius:10px;background:rgba(212,135,42,.12);border:1px solid rgba(212,135,42,.3);color:#ff9f0a;font-size:13px;cursor:pointer';
-    expBtn2.textContent='Export';
-    expBtn2.onclick=exportPreset;
+    expBtn2.style.cssText='height:42px;border-radius:10px;background:rgba(212,135,42,.12);border:1px solid rgba(212,135,42,.3);color:#ff9f0a;font-size:14px;cursor:pointer';
+    expBtn2.textContent='⬇ Export';
+    expBtn2.onclick=function(){
+      // Ask for preset name before export
+      var name=prompt('ชื่อ Preset ที่จะ export:',getActivePreset()?.name||'MyPreset');
+      if(!name) return;
+      var p2=getActivePreset();
+      if(p2) p2.name=name;
+      renderPresetBar();
+      exportPreset();
+    };
     grid.appendChild(impBtn); grid.appendChild(expBtn2);
     wrap.appendChild(grid);
     body.appendChild(wrap);
     return;
   }
 
-  // Slider categories
-  const ids=MOB_CATS[cat]||[];
+  // Custom slider — only draggable from thumb, not track
+  var ids=MOB_CATS[cat]||[];
+  var THUMB_R=16; // touch radius around thumb center
   ids.forEach(function(id){
-    const cfg=SLIDERS.find(function(s){return s[0]===id;}); if(!cfg) return;
-    const label=cfg[1], mn=cfg[2], mx=cfg[3], df=cfg[4], unit=cfg[6]||'';
-    const p=getActivePreset();
-    const v=(p&&p.settings[id]!==undefined)?p.settings[id]:df;
-    const row=document.createElement('div');
+    var cfg=SLIDERS.find(function(s){return s[0]===id;}); if(!cfg) return;
+    var label=cfg[1], mn=cfg[2], mx=cfg[3], df=cfg[4], unit=cfg[6]||'';
+    var p=getActivePreset();
+    var v=(p&&p.settings[id]!==undefined)?p.settings[id]:df;
+    var row=document.createElement('div');
     row.className='mob-sl-row';
-    const sign=v>0?'+':'';
-    row.innerHTML=
-      '<div class="mob-sl-hd">' +
-        '<span class="mob-sl-lbl">'+label+'</span>' +
-        '<span class="mob-sl-val" id="mob-v-'+id+'">'+sign+v+unit+'</span>' +
-      '</div>' +
-      '<input class="mob-sl" type="range" id="mob-sl-'+id+'" min="'+mn+'" max="'+mx+'" value="'+v+'" data-sid="'+id+'" data-unit="'+unit+'"' +
-        ' oninput="mobOnSlData(this)">';
-    body.appendChild(row);
+    var sign=v>0?'+':'';
+    // Header
+    var hd=document.createElement('div'); hd.className='mob-sl-hd';
+    var lbl=document.createElement('span'); lbl.className='mob-sl-lbl'; lbl.textContent=label;
+    var val=document.createElement('span'); val.className='mob-sl-val'; val.id='mob-v-'+id;
+    val.textContent=sign+v+unit;
+    hd.appendChild(lbl); hd.appendChild(val); row.appendChild(hd);
+    // Custom slider track
+    var track=document.createElement('div');
+    track.style.cssText='position:relative;height:28px;display:flex;align-items:center;touch-action:none;cursor:pointer;margin-bottom:4px';
+    var trackBg=document.createElement('div');
+    trackBg.style.cssText='position:absolute;left:0;right:0;height:4px;background:#3a3a3c;border-radius:2px;pointer-events:none';
+    var trackFill=document.createElement('div');
+    trackFill.style.cssText='position:absolute;left:0;height:4px;background:#ff9f0a;border-radius:2px;pointer-events:none';
+    var thumb=document.createElement('div');
+    thumb.style.cssText='position:absolute;width:28px;height:28px;border-radius:50%;background:#ff9f0a;box-shadow:0 2px 8px rgba(0,0,0,.5);transform:translateX(-50%);top:0;pointer-events:none';
+    track.appendChild(trackBg); track.appendChild(trackFill); track.appendChild(thumb);
+    row.appendChild(track); body.appendChild(row);
+
+    // Position helpers
+    function valToFrac(vv){ return (vv-mn)/(mx-mn); }
+    function fracToVal(fr){ return Math.round(mn+fr*(mx-mn)); }
+    function updateTrack(vv){
+      var fr=valToFrac(vv);
+      var pct=fr*100;
+      trackFill.style.width=pct+'%';
+      thumb.style.left=pct+'%';
+      var s=(vv>0?'+':'')+vv+unit;
+      var el=document.getElementById('mob-v-'+id);
+      if(el) el.textContent=s;
+    }
+    updateTrack(v);
+
+    // Touch events — only respond if touch starts within THUMB_R of thumb center
+    var dragging=false;
+    track.addEventListener('touchstart',function(e){
+      var rect=track.getBoundingClientRect();
+      var tx=e.touches[0].clientX-rect.left;
+      var ty=e.touches[0].clientY-rect.top;
+      var fr=valToFrac(v);
+      var thumbX=fr*rect.width;
+      var thumbY=rect.height/2;
+      var dist=Math.sqrt((tx-thumbX)*(tx-thumbX)+(ty-thumbY)*(ty-thumbY));
+      if(dist>THUMB_R+8) return; // not close enough to thumb — let panel scroll
+      dragging=true;
+      e.stopPropagation();
+    },{passive:true});
+
+    track.addEventListener('touchmove',function(e){
+      if(!dragging) return;
+      e.preventDefault(); e.stopPropagation();
+      var rect=track.getBoundingClientRect();
+      var fr=Math.max(0,Math.min(1,(e.touches[0].clientX-rect.left)/rect.width));
+      var newVal=fracToVal(fr);
+      if(newVal===v) return;
+      v=newVal; updateTrack(v);
+      // Sync desktop
+      var dEl=document.getElementById('sl-'+id);
+      var dVl=document.getElementById('v-'+id);
+      if(dEl) dEl.value=v;
+      if(dVl) dVl.textContent=(v>0?'+':'')+v+(unit||'');
+      patch(id,v); schedRender();
+    },{passive:false});
+
+    track.addEventListener('touchend',function(){ dragging=false; },{passive:true});
   });
 }
 function mobOnSlData(input){
@@ -3020,27 +3162,154 @@ function mobOnSL(id,input,unit){
 }
 
 function mobSyncSliders(){
-  const p=getActivePreset(); if(!p) return;
-  const s=p.settings;
-  const ids=MOB_CATS[mobCat]||[];
-  ids.forEach(id=>{
-    const cfg=SLIDERS.find(sl=>sl[0]===id); if(!cfg) return;
-    const [,,,,df,,unit=''] = cfg;
-    const v=s[id]??df;
-    const el=document.getElementById('mob-sl-'+id);
-    const vl=document.getElementById('mob-v-'+id);
-    if(el) el.value=v;
-    if(vl) vl.textContent=(v>0?'+':'')+v+(unit||'');
+  // Custom sliders hold value in closure, so rebuild panel to sync
+  if(mobCat && MOB_CATS[mobCat] && MOB_CATS[mobCat].length>0){
+    mobBuildPanel(mobCat);
+  }
+}
+
+// Reset current photo to default preset (no confirm)
+function mobResetCurrent(){
+  const f=G.files.find(f=>f.id===G.activeId); if(!f) return;
+  const def=G.presets[0];
+  f.presetId=def.id;
+  G.activePresetId=def.id;
+  syncUI(); mobBuildPanel(mobCat); schedRender();
+  toast('Reset ภาพนี้กลับ Default');
+}
+
+function mobApplyAll(){
+  applyPresetToAll();
+  toast('✅ Apply preset ครบทุก '+G.files.length+' ภาพ');
+}
+
+/* ══ EXPORT SHEET ════════════════════════════════════════════════ */
+var mobExpSz='orig'; // current size selection
+
+function openMobExport(){
+  if(!G.files.some(f=>f.status==='ready')){ toast('ยังไม่มีภาพพร้อม export'); return; }
+  // Update all-count label
+  var cnt=G.files.filter(function(f){return f.status==='ready';}).length;
+  document.getElementById('mob-exp-allcount').textContent='('+cnt+' ภาพ)';
+  // Reset UI
+  document.getElementById('mob-exp-curr').checked=true;
+  document.getElementById('mob-exp-progress').style.display='none';
+  document.getElementById('mob-exp-go').disabled=false;
+  document.getElementById('mob-exp-go').textContent='\u2b07 Export';
+  var sheet=document.getElementById('mob-export-sheet');
+  sheet.style.display='flex';
+  // Animate in
+  var inner=document.getElementById('mob-export-inner');
+  inner.style.transform='translateY(100%)';
+  requestAnimationFrame(function(){
+    inner.style.transition='transform .3s ease';
+    inner.style.transform='translateY(0)';
   });
 }
 
-function mobResetPreset(){
-  resetPreset();
-  mobBuildPanel(mobCat);
+function closeMobExport(){
+  if(exporting) return;
+  var inner=document.getElementById('mob-export-inner');
+  inner.style.transition='transform .25s ease';
+  inner.style.transform='translateY(100%)';
+  setTimeout(function(){
+    document.getElementById('mob-export-sheet').style.display='none';
+    inner.style.transition='';
+  },250);
 }
-function mobApplyAll(){
-  applyPresetToAll();
-  toast('Applied to all '+G.files.length+' files');
+
+function mobExpSize(btn){
+  document.querySelectorAll('.mob-exp-sizebtn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  mobExpSz=btn.dataset.sz;
+  document.getElementById('mob-exp-custsize').style.display=(mobExpSz==='custom')?'flex':'none';
+}
+
+async function runMobExport(){
+  if(exporting) return;
+  var scope=document.querySelector('input[name=mob-exp-scope]:checked').value;
+  var files;
+  if(scope==='current'){
+    var cur=G.files.find(function(f){return f.id===G.activeId&&f.status==='ready';});
+    if(!cur){ toast('ภาพปัจจุบันยังไม่พร้อม'); return; }
+    files=[cur];
+  } else {
+    // Apply all first
+    applyPresetToAll();
+    files=G.files.filter(function(f){return f.status==='ready';});
+  }
+  if(!files.length){ toast('ไม่มีภาพ'); return; }
+
+  // Get long side from size selection
+  var longSide=0;
+  if(mobExpSz==='2048') longSide=2048;
+  else if(mobExpSz==='1920') longSide=1920;
+  else if(mobExpSz==='custom'){
+    longSide=parseInt(document.getElementById('mob-exp-custinp').value)||1500;
+  }
+  // Sync to desktop size selector so renderFull uses it
+  syncMobSizeToDesktop(longSide);
+
+  exporting=true;
+  document.getElementById('mob-exp-go').disabled=true;
+  document.getElementById('mob-exp-go').textContent='กำลัง export…';
+  document.getElementById('mob-exp-progress').style.display='block';
+
+  var total=files.length, done=0;
+  var bar=document.getElementById('mob-exp-bar');
+  var status=document.getElementById('mob-exp-status');
+  var q=1.0; // quality 100
+
+  for(var i=0;i<files.length;i++){
+    var f=files[i]; f.status='processing';
+    status.textContent='('+(i+1)+'/'+total+') '+f.name.replace(/\.[^.]+$/,'');
+    if(bar) bar.style.width=Math.round(i/total*100)+'%';
+    try{
+      var blob=await renderFull(f,q);
+      var outName='HL_'+f.name.replace(/\.(heic|heif|png|webp|jpe?g)$/i,'')+'.jpg';
+      var file=new File([blob],outName,{type:'image/jpeg'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file],title:'HL Express'});
+          f.status='ready'; done++; continue;
+        }catch(e){ if(e.name==='AbortError'){ f.status='ready'; continue; } }
+      }
+      // Fallback download
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a'); a.href=url; a.download=outName;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      await new Promise(function(r){setTimeout(r,400);});
+      URL.revokeObjectURL(url);
+      f.status='ready'; done++;
+    }catch(e){ f.status='error'; console.error(e); }
+    if(bar) bar.style.width=Math.round((i+1)/total*100)+'%';
+    mobRenderLib();
+  }
+
+  exporting=false;
+  status.textContent='✅ Done — '+done+'/'+total+' ภาพ';
+  document.getElementById('mob-exp-go').disabled=false;
+  document.getElementById('mob-exp-go').textContent='\u2b07 Export อีกครั้ง';
+  // Auto-close after 1.5s
+  setTimeout(closeMobExport,1500);
+}
+
+function syncMobSizeToDesktop(longSide){
+  // Sync size selection to desktop hidden bar so renderFull reads correct size
+  document.querySelectorAll('.szbtn').forEach(function(b){b.classList.remove('on');});
+  if(longSide===0){
+    var origBtn=document.querySelector('.szbtn[data-sz="orig"]');
+    if(origBtn) origBtn.classList.add('on');
+  } else if(longSide===2048){
+    var b2=document.querySelector('.szbtn[data-sz="2048"]');
+    if(b2) b2.classList.add('on');
+  } else {
+    // custom
+    var custBtn=document.querySelector('.szbtn[data-sz="custom"]');
+    if(custBtn) custBtn.classList.add('on');
+    var custIn=document.getElementById('szval');
+    if(custIn) custIn.value=longSide;
+  }
 }
 
 /* ── Prev/Next ── */
@@ -3071,6 +3340,124 @@ function mobMirrorCanvas(){
 // ── Mobile hooks — ใช้ callback แทน function redeclaration (ป้องกัน hoisting bug) ──
 // Init
 setTimeout(initMobile,150);
+
+/* ══ MOBILE PINCH ZOOM + PAN ════════════════════════════════════════ */
+(function(){
+  // State
+  var mz={ scale:1, ox:0, oy:0,          // current transform
+            baseScale:1, baseOx:0, baseOy:0, // at gesture start
+            lastTap:0 };                     // for double-tap reset
+
+  function applyTransform(cv){
+    if(!cv) return;
+    cv.style.transformOrigin='0 0';
+    cv.style.transform='translate('+mz.ox+'px,'+mz.oy+'px) scale('+mz.scale+')';
+  }
+
+  function clamp(val,mn,mx){ return Math.max(mn,Math.min(mx,val)); }
+
+  function resetZoom(){
+    mz.scale=1; mz.ox=0; mz.oy=0;
+    var cv=document.getElementById('mob-cv');
+    if(cv){ cv.style.transform=''; cv.style.transformOrigin=''; }
+    schedRender(); // redraw centered
+  }
+
+  // Clamp pan so image stays visible
+  function clampPan(cv){
+    if(!cv||mz.scale<=1){ mz.ox=0; mz.oy=0; return; }
+    var container=document.getElementById('mob-canvas');
+    if(!container) return;
+    var cW=container.clientWidth, cH=container.clientHeight;
+    var iW=cv.width*mz.scale, iH=cv.height*mz.scale;
+    var maxOx=0, minOx=Math.min(0,cW-iW);
+    var maxOy=0, minOy=Math.min(0,cH-iH);
+    mz.ox=clamp(mz.ox,minOx,maxOx);
+    mz.oy=clamp(mz.oy,minOy,maxOy);
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    // Attach once mob-canvas exists
+    var container=document.getElementById('mob-canvas');
+    if(!container) return;
+
+    var touches=[], gestureStartDist=0, gestureStartScale=1;
+    var panStartX=0, panStartY=0;
+
+    function midpoint(t){ return { x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2 }; }
+    function dist(t){ var dx=t[1].clientX-t[0].clientX, dy=t[1].clientY-t[0].clientY; return Math.sqrt(dx*dx+dy*dy); }
+
+    container.addEventListener('touchstart',function(e){
+      var cv=document.getElementById('mob-cv');
+      if(!cv||cv.style.display==='none') return;
+      touches=Array.from(e.touches);
+
+      if(touches.length===1){
+        // Double-tap detection
+        var now=Date.now();
+        if(now-mz.lastTap<300){ resetZoom(); mz.lastTap=0; return; }
+        mz.lastTap=now;
+        // Pan start
+        panStartX=touches[0].clientX-mz.ox;
+        panStartY=touches[0].clientY-mz.oy;
+      } else if(touches.length===2){
+        // Pinch start
+        gestureStartDist=dist(touches);
+        gestureStartScale=mz.scale;
+        mz.baseOx=mz.ox; mz.baseOy=mz.oy;
+      }
+    },{passive:true});
+
+    container.addEventListener('touchmove',function(e){
+      var cv=document.getElementById('mob-cv');
+      if(!cv||cv.style.display==='none') return;
+      e.preventDefault(); // prevent page scroll/zoom
+      touches=Array.from(e.touches);
+
+      if(touches.length===2){
+        // Pinch zoom
+        var newDist=dist(touches);
+        var ratio=newDist/gestureStartDist;
+        var newScale=clamp(gestureStartScale*ratio, 1, 6);
+
+        // Zoom toward pinch midpoint
+        var mid=midpoint(touches);
+        var rect=container.getBoundingClientRect();
+        var pivotX=mid.x-rect.left;
+        var pivotY=mid.y-rect.top;
+
+        // Adjust offset so pivot stays fixed
+        var scaleChange=newScale/mz.scale;
+        mz.ox=pivotX-(pivotX-mz.ox)*scaleChange;
+        mz.oy=pivotY-(pivotY-mz.oy)*scaleChange;
+        mz.scale=newScale;
+        clampPan(cv);
+        applyTransform(cv);
+
+      } else if(touches.length===1 && mz.scale>1){
+        // Pan (only when zoomed in)
+        mz.ox=touches[0].clientX-panStartX;
+        mz.oy=touches[0].clientY-panStartY;
+        clampPan(document.getElementById('mob-cv'));
+        applyTransform(document.getElementById('mob-cv'));
+      }
+    },{passive:false});
+
+    container.addEventListener('touchend',function(e){
+      var cv=document.getElementById('mob-cv');
+      if(!cv) return;
+      touches=Array.from(e.touches);
+
+      if(mz.scale<=1.05){
+        // Snap back to 1x
+        mz.scale=1; mz.ox=0; mz.oy=0;
+        cv.style.transform=''; cv.style.transformOrigin='';
+      }
+      // Redraw at current zoom for crispness (only if zoomed)
+      if(mz.scale>1.05) schedRender();
+    },{passive:true});
+  });
+})();
 
 
 function setOutputPath(input){
