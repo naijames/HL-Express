@@ -2101,33 +2101,33 @@ function renderPreview(){
 
   // On mobile: resize container to match image ratio, within max constraints
   if(isMob && area){
-    const maxW=area.clientWidth;
-    const maxH=Math.round(window.innerHeight*0.52); // max ~52% of screen height
+    const maxW=area.clientWidth||window.innerWidth-28;
+    const maxH=Math.round(window.innerHeight*0.52);
     const imgRatio=f.h/f.w;
-    const idealH=Math.round(maxW*imgRatio);
-    const containerH=Math.min(idealH,maxH);
-    area.style.height=containerH+'px';
-    aH=containerH;
+    const containerH=Math.min(Math.round(maxW*imgRatio), maxH);
+    if(containerH>0) area.style.height=containerH+'px';
+    aW=area.clientWidth||maxW;
+    aH=area.clientHeight||containerH||maxH;
   }
+  // Guard: if still 0, use fallback
+  if(aW<=0) aW=window.innerWidth-28;
+  if(aH<=0) aH=Math.round(window.innerHeight*0.45);
 
-  // On mobile: multiply canvas size by zoom but cap at screen pixel density
-  // So canvas is never bigger than what the screen can actually show
-  const dpr = window.devicePixelRatio || 1;
-  // Max useful canvas width = container width × DPR (1:1 screen pixel)
-  const maxCanvasW = Math.round(aW * dpr);
-  const maxCanvasH = Math.round(aH * dpr);
+  // Canvas resolution capped at screen pixel density
+  const dpr=window.devicePixelRatio||1;
+  const maxCanvasW=Math.round(aW*dpr);
+  const maxCanvasH=Math.round(aH*dpr);
 
   const sc=Math.min(aW/f.w, aH/f.h, 1);
-  // base canvas size (1x zoom, fits container)
+  if(sc<=0) return; // safety guard
   const baseW=Math.round(f.w*sc), baseH=Math.round(f.h*sc);
+  if(baseW<=0||baseH<=0) return;
 
-  // Effective zoom: capped so canvas doesn't exceed screen resolution
-  const zoomScale = (isMob && mz && mz.scale>1) ? mz.scale : 1;
-  const capScale = Math.min(zoomScale, maxCanvasW/baseW, maxCanvasH/baseH);
-  const effScale = Math.max(1, capScale);
+  const zoomScale=(isMob&&mz&&mz.scale>1)?mz.scale:1;
+  const capScale=Math.min(zoomScale, maxCanvasW/baseW, maxCanvasH/baseH);
+  const effScale=Math.max(1,capScale);
 
   const W=Math.round(baseW*effScale), H=Math.round(baseH*effScale);
-  const sizeChanged=(cv.width!==W||cv.height!==H);
   cv.width=W; cv.height=H;
   cv.style.display='block';
 
