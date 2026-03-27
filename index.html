@@ -2099,52 +2099,29 @@ function renderPreview(){
   try{ img=await ensureImg(f); } catch(e){ return; }
   if(G.activeId!==f.id) return;
 
-  // On mobile: resize container to match image ratio, within max constraints
+  // On mobile: resize container height to match image ratio
   if(isMob && area){
-    const maxW=area.clientWidth||window.innerWidth-28;
-    const maxH=Math.round(window.innerHeight*0.52);
     const imgRatio=f.h/f.w;
-    const containerH=Math.min(Math.round(maxW*imgRatio), maxH);
-    if(containerH>0) area.style.height=containerH+'px';
-    aW=area.clientWidth||maxW;
-    aH=area.clientHeight||containerH||maxH;
+    const maxH=Math.round(window.innerHeight*0.52);
+    const idealH=Math.round(aW*imgRatio);
+    const containerH=Math.min(idealH,maxH);
+    if(containerH>0){ area.style.height=containerH+'px'; aH=containerH; }
   }
-  // Guard: if still 0, use fallback
-  if(aW<=0) aW=window.innerWidth-28;
-  if(aH<=0) aH=Math.round(window.innerHeight*0.45);
 
-  // Canvas resolution capped at screen pixel density
-  const dpr=window.devicePixelRatio||1;
-  const maxCanvasW=Math.round(aW*dpr);
-  const maxCanvasH=Math.round(aH*dpr);
-
+  // Simple scale to fit container
   const sc=Math.min(aW/f.w, aH/f.h, 1);
-  if(sc<=0) return; // safety guard
-  const baseW=Math.round(f.w*sc), baseH=Math.round(f.h*sc);
-  if(baseW<=0||baseH<=0) return;
-
-  const zoomScale=(isMob&&mz&&mz.scale>1)?mz.scale:1;
-  const capScale=Math.min(zoomScale, maxCanvasW/baseW, maxCanvasH/baseH);
-  const effScale=Math.max(1,capScale);
-
-  const W=Math.round(baseW*effScale), H=Math.round(baseH*effScale);
+  const W=Math.max(1,Math.round(f.w*sc));
+  const H=Math.max(1,Math.round(f.h*sc));
   cv.width=W; cv.height=H;
   cv.style.display='block';
 
   // Center on mobile
   if(isMob){
     cv.style.position='absolute';
-    if(effScale>1){
-      cv.style.transform='translate('+mz.ox+'px,'+mz.oy+'px)';
-      cv.style.transformOrigin='0 0';
-      cv.style.left=Math.round((aW-baseW)/2)+'px';
-      cv.style.top =Math.round((aH-baseH)/2)+'px';
-    } else {
-      cv.style.transform='';
-      cv.style.transformOrigin='';
-      cv.style.left=Math.round((aW-W)/2)+'px';
-      cv.style.top =Math.round((aH-H)/2)+'px';
-    }
+    cv.style.transform='';
+    cv.style.transformOrigin='';
+    cv.style.left=Math.round((aW-W)/2)+'px';
+    cv.style.top =Math.round((aH-H)/2)+'px';
   }
 
   const ctx=cv.getContext('2d');
