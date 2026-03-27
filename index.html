@@ -237,16 +237,18 @@ main{flex:1;display:flex;overflow:hidden}
 #mob-nav{display:flex;justify-content:space-around;align-items:center;background:#111;border-top:1px solid #2c2c2e;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-shrink:0}
 /* ══ LANDSCAPE OVERLAY PANEL ════════════════════════════════════════ */
 @media(pointer:coarse) and (orientation:landscape){
-  #mob{flex-direction:column} /* keep column, canvas fills naturally */
+  #mob{flex-direction:column}
   #mob-canvas{
-    flex:1;
+    flex:1;min-height:0;
     width:calc(100% - 28px);
-    height:auto;
+    height:auto!important;
+    aspect-ratio:unset!important;
     max-height:unset;
-    margin-bottom:6px;
+    margin-bottom:0;
   }
-  #mob-cats{display:none!important} /* hidden — inside overlay panel */
-  #mob-panel{display:none!important} /* hidden — overlay takes over */
+  #mob-cats{display:none!important}
+  #mob-panel{display:none!important}
+  #mob-panel-grip-row{display:none!important}
 }
 /* Landscape overlay panel — floats over canvas on right */
 #mob-ls-panel{
@@ -2051,6 +2053,80 @@ function showOriginal(on){
 
 const FCSS={normal:'',warm:'sepia(.35) saturate(1.5) hue-rotate(-15deg) brightness(1.05)',cool:'saturate(1.25) hue-rotate(20deg) brightness(1.02)',vintage:'sepia(.5) saturate(.8) brightness(.92) contrast(1.05)',bw:'grayscale(1) contrast(1.1)',fade:'brightness(1.1) contrast(.82) saturate(.8)',drama:'contrast(1.5) saturate(1.35) brightness(.92)',matte:'contrast(.82) brightness(1.1) saturate(.82)',golden:'sepia(.45) saturate(1.9) hue-rotate(-22deg) brightness(1.1)'};
 
+// Pixel-level color filter matching CSS filter effects for WebKit
+function applyColorFilter(px, filterId){
+  if(!filterId || filterId==='normal') return;
+  for(let i=0;i<px.length;i+=4){
+    let r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255;
+    if(filterId==='bw'){
+      const l=0.2126*r+0.7152*g+0.0722*b;
+      // contrast(1.1)
+      r=g=b=Math.min(1,Math.max(0,(l-0.5)*1.1+0.5));
+    } else if(filterId==='warm'){
+      // sepia(.35) saturate(1.5) hue-rotate(-15deg) brightness(1.05)
+      [r,g,b]=applySepia(r,g,b,0.35);
+      [r,g,b]=applySaturate(r,g,b,1.5);
+      [r,g,b]=applyHueRotate(r,g,b,-15);
+      r*=1.05; g*=1.05; b*=1.05;
+    } else if(filterId==='cool'){
+      // saturate(1.25) hue-rotate(20deg) brightness(1.02)
+      [r,g,b]=applySaturate(r,g,b,1.25);
+      [r,g,b]=applyHueRotate(r,g,b,20);
+      r*=1.02; g*=1.02; b*=1.02;
+    } else if(filterId==='vintage'){
+      // sepia(.5) saturate(.8) brightness(.92) contrast(1.05)
+      [r,g,b]=applySepia(r,g,b,0.5);
+      [r,g,b]=applySaturate(r,g,b,0.8);
+      r*=0.92; g*=0.92; b*=0.92;
+      r=(r-0.5)*1.05+0.5; g=(g-0.5)*1.05+0.5; b=(b-0.5)*1.05+0.5;
+    } else if(filterId==='fade'){
+      // brightness(1.1) contrast(.82) saturate(.8)
+      r*=1.1; g*=1.1; b*=1.1;
+      r=(r-0.5)*0.82+0.5; g=(g-0.5)*0.82+0.5; b=(b-0.5)*0.82+0.5;
+      [r,g,b]=applySaturate(r,g,b,0.8);
+    } else if(filterId==='drama'){
+      // contrast(1.5) saturate(1.35) brightness(.92)
+      r=(r-0.5)*1.5+0.5; g=(g-0.5)*1.5+0.5; b=(b-0.5)*1.5+0.5;
+      [r,g,b]=applySaturate(r,g,b,1.35);
+      r*=0.92; g*=0.92; b*=0.92;
+    } else if(filterId==='matte'){
+      // contrast(.82) brightness(1.1) saturate(.82)
+      r=(r-0.5)*0.82+0.5; g=(g-0.5)*0.82+0.5; b=(b-0.5)*0.82+0.5;
+      r*=1.1; g*=1.1; b*=1.1;
+      [r,g,b]=applySaturate(r,g,b,0.82);
+    } else if(filterId==='golden'){
+      // sepia(.45) saturate(1.9) hue-rotate(-22deg) brightness(1.1)
+      [r,g,b]=applySepia(r,g,b,0.45);
+      [r,g,b]=applySaturate(r,g,b,1.9);
+      [r,g,b]=applyHueRotate(r,g,b,-22);
+      r*=1.1; g*=1.1; b*=1.1;
+    }
+    px[i]  =Math.min(255,Math.max(0,r*255+0.5)|0);
+    px[i+1]=Math.min(255,Math.max(0,g*255+0.5)|0);
+    px[i+2]=Math.min(255,Math.max(0,b*255+0.5)|0);
+  }
+}
+function applySepia(r,g,b,a){
+  return [
+    Math.min(1,r*(1-0.607*a)+g*0.769*a+b*0.189*a),
+    Math.min(1,r*0.349*a+g*(1-0.314*a)+b*0.168*a),
+    Math.min(1,r*0.272*a+g*0.534*a+b*(1-0.869*a))
+  ];
+}
+function applySaturate(r,g,b,s){
+  const l=0.2126*r+0.7152*g+0.0722*b;
+  return [l+(r-l)*s, l+(g-l)*s, l+(b-l)*s];
+}
+function applyHueRotate(r,g,b,deg){
+  const a=deg*Math.PI/180;
+  const cos=Math.cos(a), sin=Math.sin(a);
+  // Standard hue rotation matrix
+  const nr=r*(0.213+cos*0.787-sin*0.213)+g*(0.213-cos*0.213+sin*0.143)+b*(0.213-cos*0.213-sin*0.928);
+  const ng=r*(0.715-cos*0.715-sin*0.715)+g*(0.715+cos*0.285+sin*0.140)+b*(0.715-cos*0.715+sin*0.140);
+  const nb=r*(0.072-cos*0.072+sin*0.928)+g*(0.072-cos*0.072-sin*0.283)+b*(0.072+cos*0.928+sin*0.283);
+  return [Math.min(1,Math.max(0,nr)), Math.min(1,Math.max(0,ng)), Math.min(1,Math.max(0,nb))];
+}
+
 function cssFilter(s){
   const b=1+(s.brightness||0)/100+(s.exposure||0)/100;
   const c=1+(s.contrast||0)/100, sat=1+(s.saturation||0)/100;
@@ -2527,6 +2603,7 @@ async function renderFull(f,q){
         ctx.drawImage(img,0,0,dims.w,dims.h);
         const id=ctx.getImageData(0,0,dims.w,dims.h);
         applyBrightnessContrastSat(id.data,s);
+        applyColorFilter(id.data, s.filter||'normal');
         processPixels(id.data,s,dims.w,dims.h);
         ctx.putImageData(id,0,0);
       } else {
@@ -2543,22 +2620,27 @@ async function renderFull(f,q){
   });
 }
 
-// Pixel-level brightness/contrast/saturation for WebKit export
+// Pixel-level brightness/contrast/saturation matching CSS filter spec
 function applyBrightnessContrastSat(px,s){
-  const br=(s.brightness||0)/100+(s.exposure||0)/100; // combined brightness+exposure
-  const ct=(s.contrast||0)/100;
-  const sat=(s.saturation||0)/100;
+  // Match cssFilter formula: brightness(1 + br/100 + exp/100) contrast(1 + ct/100) saturate(1 + sat/100)
+  const bMult = 1 + (s.brightness||0)/100 + (s.exposure||0)/100; // CSS brightness = multiply
+  const cMult = 1 + (s.contrast||0)/100;   // CSS contrast = (x-0.5)*c + 0.5
+  const sMult = 1 + (s.saturation||0)/100; // CSS saturate = lerp toward gray
+  if(bMult===1 && cMult===1 && sMult===1) return; // nothing to do
   for(let i=0;i<px.length;i+=4){
     let r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255;
-    // Brightness
-    r+=br; g+=br; b+=br;
-    // Contrast
-    r=(r-0.5)*(1+ct)+0.5; g=(g-0.5)*(1+ct)+0.5; b=(b-0.5)*(1+ct)+0.5;
-    // Saturation
-    if(sat!==0){ const l=0.2126*r+0.7152*g+0.0722*b; r=l+(r-l)*(1+sat); g=l+(g-l)*(1+sat); b=l+(b-l)*(1+sat); }
-    px[i]  =Math.min(255,Math.max(0,Math.round(r*255)));
-    px[i+1]=Math.min(255,Math.max(0,Math.round(g*255)));
-    px[i+2]=Math.min(255,Math.max(0,Math.round(b*255)));
+    // Brightness (multiply)
+    r*=bMult; g*=bMult; b*=bMult;
+    // Contrast: (x - 0.5) * c + 0.5
+    r=(r-0.5)*cMult+0.5; g=(g-0.5)*cMult+0.5; b=(b-0.5)*cMult+0.5;
+    // Saturation: lerp toward luminance
+    if(sMult!==1){
+      const l=0.2126*r+0.7152*g+0.0722*b;
+      r=l+(r-l)*sMult; g=l+(g-l)*sMult; b=l+(b-l)*sMult;
+    }
+    px[i]  =Math.min(255,Math.max(0,r*255+0.5)|0);
+    px[i+1]=Math.min(255,Math.max(0,g*255+0.5)|0);
+    px[i+2]=Math.min(255,Math.max(0,b*255+0.5)|0);
   }
 }
 
@@ -2737,7 +2819,6 @@ function initMobile(){
   mobRenderCanvas();
   document.getElementById('mob-nav-prev').classList.toggle('show',G.files.length>1);
   document.getElementById('mob-nav-next').classList.toggle('show',G.files.length>1);
-  // Init landscape panel if needed
   if(isLandscape()) initLsPanel();
 }
 window.addEventListener('resize',()=>{ if(mIsMobile()) initMobile(); });
@@ -2758,8 +2839,11 @@ function mobShowEdit(){
   mobView='edit';
   document.getElementById('mob-library').classList.remove('show');
   document.getElementById('mob-canvas').style.display='';
-  document.getElementById('mob-cats').style.display='';
-  document.getElementById('mob-panel').style.display='';
+  // Only show portrait panel elements if NOT in landscape
+  if(!isLandscape()){
+    document.getElementById('mob-cats').style.display='';
+    document.getElementById('mob-panel').style.display='';
+  }
   document.getElementById('mob-nav-lib').classList.remove('on');
   document.getElementById('mob-nav-edit').classList.add('on');
   mobRenderCanvas();
@@ -3457,9 +3541,10 @@ function initLsPanel(){
     var panel=document.getElementById('mob-ls-panel');
     if(!panel) return;
     panel.style.display='flex';
+    // Always hide portrait elements in landscape via JS (CSS media query may not match on all devices)
+    document.getElementById('mob-cats').style.setProperty('display','none','important');
+    document.getElementById('mob-panel').style.setProperty('display','none','important');
     buildLsCats();
-    // Don't call buildLsPanel here — mobBuildPanel already called in initMobile
-    // Just populate the body
     var lsBody=document.getElementById('mob-ls-body');
     if(lsBody){ lsBody.innerHTML=''; }
   }catch(e){ console.warn('initLsPanel error:',e); }
@@ -3534,7 +3619,9 @@ function onOrientationChange(){
     initLsPanel();
   } else {
     hideLsPanel();
-    // Rebuild portrait panel
+    // Restore portrait elements
+    document.getElementById('mob-cats').style.removeProperty('display');
+    document.getElementById('mob-panel').style.removeProperty('display');
     mobBuildPanel(mobCat);
   }
   // Re-render canvas to new dimensions
