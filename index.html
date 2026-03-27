@@ -540,7 +540,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
   <div class="udrop" id="framedrop-l" onclick="document.getElementById('framefile-l').click()">
     อัปโหลดกรอบแนวนอน<br><small style="font-size:10px;opacity:.4">PNG · ชื่อไฟล์มี land / hori</small>
   </div>
-  <div class="uloaded" id="frameloaded-l">
+  <div class="uloaded" id="frameloaded-l" style="display:none">
     <div style="display:flex;align-items:center;gap:7px">
       <img id="framethumb-l" style="width:28px;height:28px;object-fit:cover;border-radius:3px;border:1px solid var(--b2)">
       <span class="ufn" id="framefn-l">—</span>
@@ -554,7 +554,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
   <div class="udrop" id="framedrop-p" onclick="document.getElementById('framefile-p').click()">
     อัปโหลดกรอบแนวตั้ง<br><small style="font-size:10px;opacity:.4">PNG · ชื่อไฟล์มี port / vert</small>
   </div>
-  <div class="uloaded" id="frameloaded-p">
+  <div class="uloaded" id="frameloaded-p" style="display:none">
     <div style="display:flex;align-items:center;gap:7px">
       <img id="framethumb-p" style="width:28px;height:28px;object-fit:cover;border-radius:3px;border:1px solid var(--b2)">
       <span class="ufn" id="framefn-p">—</span>
@@ -873,7 +873,7 @@ const SLIDERS = [
   ['lcstr',     'Local contrast',0,100,0,'ab-hdr',''],
   ['micro',     'Micro detail', 0,100,0,'ab-hdr',''],
   ['lutstr',    'LUT strength', 0,100,100,'ab-lut','%'],
-  ['frameop',   'Opacity',      0,100,100,'frameloaded-l','%'],
+  ['frameop',   'Opacity',      0,100,100,'ab-frame','%'],
 ];
 
 /* build sliders into their parent containers */
