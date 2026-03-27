@@ -2521,17 +2521,45 @@ async function renderFull(f,q){
       const cv=document.createElement('canvas');
       cv.width=dims.w; cv.height=dims.h;
       const ctx=cv.getContext('2d');
-      ctx.filter=cssFilter(getFileSettings(f));
-      ctx.drawImage(img,0,0,dims.w,dims.h); ctx.filter='none';
-      if(needsPx(getFileSettings(f))){const id=ctx.getImageData(0,0,dims.w,dims.h);processPixels(id.data,getFileSettings(f),dims.w,dims.h);ctx.putImageData(id,0,0);}
+      const s=getFileSettings(f);
+      // On WebKit (mobile), ctx.filter is not supported — apply everything via pixel pipeline
+      if(mIsMobile()){
+        ctx.drawImage(img,0,0,dims.w,dims.h);
+        const id=ctx.getImageData(0,0,dims.w,dims.h);
+        applyBrightnessContrastSat(id.data,s);
+        processPixels(id.data,s,dims.w,dims.h);
+        ctx.putImageData(id,0,0);
+      } else {
+        ctx.filter=cssFilter(s);
+        ctx.drawImage(img,0,0,dims.w,dims.h); ctx.filter='none';
+        if(needsPx(s)){const id=ctx.getImageData(0,0,dims.w,dims.h);processPixels(id.data,s,dims.w,dims.h);ctx.putImageData(id,0,0);}
+      }
       drawOverlays(ctx,dims.w,dims.h);
       cv.toBlob(b=>{
-        // Release img after blob is created to free RAM
         if(f.id!==G.activeId) f.img=null;
         b?res(b):rej(new Error('Blob error'));
       },'image/jpeg',q);
     }catch(e){rej(e);}
   });
+}
+
+// Pixel-level brightness/contrast/saturation for WebKit export
+function applyBrightnessContrastSat(px,s){
+  const br=(s.brightness||0)/100+(s.exposure||0)/100; // combined brightness+exposure
+  const ct=(s.contrast||0)/100;
+  const sat=(s.saturation||0)/100;
+  for(let i=0;i<px.length;i+=4){
+    let r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255;
+    // Brightness
+    r+=br; g+=br; b+=br;
+    // Contrast
+    r=(r-0.5)*(1+ct)+0.5; g=(g-0.5)*(1+ct)+0.5; b=(b-0.5)*(1+ct)+0.5;
+    // Saturation
+    if(sat!==0){ const l=0.2126*r+0.7152*g+0.0722*b; r=l+(r-l)*(1+sat); g=l+(g-l)*(1+sat); b=l+(b-l)*(1+sat); }
+    px[i]  =Math.min(255,Math.max(0,Math.round(r*255)));
+    px[i+1]=Math.min(255,Math.max(0,Math.round(g*255)));
+    px[i+2]=Math.min(255,Math.max(0,Math.round(b*255)));
+  }
 }
 
 /* ══ PYTHON BACKEND EXPORT ══════════════════════════════════════════ */
