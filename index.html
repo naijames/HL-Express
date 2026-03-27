@@ -148,11 +148,11 @@ main{flex:1;display:flex;overflow:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ══ MOBILE LAYOUT (≤768px) — iOS LR-style ══════════════════════════ */
-@media(max-width:1366px){
+@media(pointer:coarse){
   header,#fs,#rh-left,#rh-right,#ctrl,#bar,main{display:none!important}
   #mob{display:flex!important}
 }
-@media(min-width:1367px){#mob{display:none!important}}
+@media(pointer:fine){#mob{display:none!important}}
 /* Shell */
 #mob{display:none;flex-direction:column;height:100vh;height:100dvh;background:#000;color:#fff;font-family:var(--sans);overflow:hidden;position:fixed;inset:0;z-index:200}
 /* Header */
@@ -236,7 +236,7 @@ main{flex:1;display:flex;overflow:hidden}
 /* Bottom nav */
 #mob-nav{display:flex;justify-content:space-around;align-items:center;background:#111;border-top:1px solid #2c2c2e;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-shrink:0}
 /* ══ LANDSCAPE OVERLAY PANEL ════════════════════════════════════════ */
-@media(orientation:landscape){
+@media(pointer:coarse) and (orientation:landscape){
   #mob{flex-direction:column} /* keep column, canvas fills naturally */
   #mob-canvas{
     /* In landscape: fill available space, no aspect-ratio lock */
@@ -2687,7 +2687,7 @@ renderFS();
 renderPresetBar();
 
 /* ══ MOBILE UI ══════════════════════════════════════════════════════ */
-const IS_MOBILE=()=>window.innerWidth<=1366;
+const IS_MOBILE=()=>window.matchMedia("(pointer:coarse)").matches;
 
 // Category → sliders map
 const MOB_CATS={
