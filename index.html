@@ -181,15 +181,15 @@ main{flex:1;display:flex;overflow:hidden}
 .mob-exp-progbar{height:100%;background:var(--acc);border-radius:3px;width:0;transition:width .3s}
 #mob-exp-status{font-size:13px;color:rgba(255,255,255,.6);text-align:center}
 /* Canvas */
-#mob-canvas{flex:1;position:relative;overflow:hidden;background:#111;margin:0 14px 6px;border-radius:16px;min-height:0;touch-action:none;}
+#mob-canvas{position:relative;overflow:hidden;background:#111;margin:0 14px 6px;border-radius:16px;touch-action:none;flex-shrink:0;width:calc(100% - 28px);aspect-ratio:3/2;max-height:45vh;}
 #mob-canvas canvas{position:absolute;transform-origin:0 0}
 #mob-dropzone{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer}
 #mob-add-btn{width:100px;height:100px;border-radius:50%;background:#2c2c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer}
 #mob-add-icon{font-size:32px;color:var(--acc);line-height:1}
 #mob-add-lbl{font-size:14px;font-weight:600;color:var(--acc)}
-#mob-nav-prev,#mob-nav-next{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5}
-#mob-nav-prev{left:8px}
-#mob-nav-next{right:8px}
+#mob-nav-prev,#mob-nav-next{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:15px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5}
+#mob-nav-prev{left:6px}
+#mob-nav-next{right:6px}
 #mob-nav-prev.show,#mob-nav-next.show{display:flex}
 #mob-cvmeta{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,.45);font-family:var(--mono);background:rgba(0,0,0,.4);padding:2px 10px;border-radius:4px;white-space:nowrap;pointer-events:none;display:none}
 /* Tool category bar */
@@ -200,7 +200,7 @@ main{flex:1;display:flex;overflow:hidden}
 .mob-cat-icon{font-size:22px;line-height:1}
 .mob-cat-lbl{font-size:11px;font-weight:500;white-space:nowrap}
 /* Adjustment panel */
-#mob-panel{background:#1c1c1e;border-radius:20px 20px 0 0;flex-shrink:0;max-height:40vh;display:flex;flex-direction:column;position:relative}
+#mob-panel{background:#1c1c1e;border-radius:20px 20px 0 0;flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 #mob-panel-grip-row{display:flex;justify-content:center;padding:10px 0 6px;flex-shrink:0}
 #mob-panel-grip{width:36px;height:4px;background:#48484a;border-radius:2px}
 #mob-panel-reset{background:#3a3a3c;color:rgba(255,255,255,.7);border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-family:var(--sans);font-weight:500;cursor:pointer;position:absolute;right:16px;top:8px}
@@ -226,6 +226,51 @@ main{flex:1;display:flex;overflow:hidden}
 .mob-lib-dot{position:absolute;bottom:4px;right:4px;width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(0,0,0,.6)}
 /* Bottom nav */
 #mob-nav{display:flex;justify-content:space-around;align-items:center;background:#111;border-top:1px solid #2c2c2e;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-shrink:0}
+/* ══ LANDSCAPE OVERLAY PANEL ════════════════════════════════════════ */
+@media(orientation:landscape){
+  #mob{flex-direction:column} /* keep column, canvas fills naturally */
+  #mob-canvas{
+    /* In landscape: fill available space, no aspect-ratio lock */
+    aspect-ratio:unset;
+    max-height:unset;
+    flex:1;
+    width:calc(100% - 28px);
+    margin-bottom:6px;
+  }
+  #mob-cats{display:none!important} /* hidden — inside overlay panel */
+  #mob-panel{display:none!important} /* hidden — overlay takes over */
+}
+/* Landscape overlay panel — floats over canvas on right */
+#mob-ls-panel{
+  display:none;position:absolute;
+  top:0;right:0;bottom:0;
+  width:58%;max-width:340px;
+  background:rgba(22,22,24,.96);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  z-index:20;flex-direction:column;
+  transform:translateX(100%);transition:transform .28s ease;
+  border-left:1px solid rgba(255,255,255,.08);
+}
+#mob-ls-panel.open{transform:translateX(0)}
+/* Toggle tab — sticks out from left edge of panel */
+#mob-ls-toggle{
+  position:absolute;left:-28px;top:50%;transform:translateY(-50%);
+  width:28px;height:56px;
+  background:rgba(22,22,24,.92);
+  border:1px solid rgba(255,255,255,.08);border-right:none;
+  border-radius:8px 0 0 8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:rgba(255,255,255,.6);font-size:16px;
+  backdrop-filter:blur(8px);
+}
+#mob-ls-cats{
+  display:flex;overflow-x:auto;scrollbar-width:none;
+  padding:6px 8px 4px;gap:2px;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+#mob-ls-cats::-webkit-scrollbar{display:none}
+#mob-ls-body{flex:1;overflow-y:auto;padding:4px 16px 12px;scrollbar-width:none}
+#mob-ls-body::-webkit-scrollbar{display:none}
 .mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 20px;font-family:var(--sans)}
 .mob-nav-btn.on{color:var(--acc)}
 .mob-nav-icon{font-size:22px;line-height:1}
@@ -642,6 +687,16 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
     </button>
   </div>
 
+  <!-- ══ LANDSCAPE OVERLAY PANEL ══════════════════════════════════ -->
+  <div id="mob-ls-panel">
+    <div id="mob-ls-toggle" onclick="toggleLsPanel()">
+      <span id="mob-ls-toggle-icon">⟩</span>
+    </div>
+    <!-- Category tabs (horizontal scroll) -->
+    <div id="mob-ls-cats"></div>
+    <!-- Slider body -->
+    <div id="mob-ls-body"></div>
+  </div>
 
 </div>
 
@@ -2645,9 +2700,10 @@ function initMobile(){
   mobSyncSliders();
   mobRenderLib();
   mobRenderCanvas();
-  // show/hide nav arrows
   document.getElementById('mob-nav-prev').classList.toggle('show',G.files.length>1);
   document.getElementById('mob-nav-next').classList.toggle('show',G.files.length>1);
+  // Init landscape panel if needed
+  if(isLandscape()) initLsPanel();
 }
 window.addEventListener('resize',()=>{ if(mIsMobile()) initMobile(); });
 
@@ -2746,9 +2802,21 @@ function mobExportFrame(){
 /* ── Build panel sliders for current category ── */
 function mobBuildPanel(cat){
   const body=document.getElementById('mob-panel-body');
+  if(!body) return;
   body.innerHTML='';
+  mobBuildPanelInto(cat,body);
+  // Also update landscape panel if open
+  if(isLandscape()&&lsPanelOpen){
+    const lsBody=document.getElementById('mob-ls-body');
+    if(lsBody){ lsBody.innerHTML=''; mobBuildPanelInto(cat,lsBody); }
+    // sync cat highlight
+    document.querySelectorAll('#mob-ls-cats .mob-cat').forEach(function(b){
+      b.classList.toggle('on',b.dataset.cat===cat);
+    });
+  }
+}
 
-  if(cat==='frame'){
+function mobBuildPanelInto(cat, body){
     // Build frame panel without nested template literals
     const hasL=!!G.frameLImg, hasP=!!G.framePImg;
     function makeFrameRow(ori, has, thumbSrc, fname, label){
@@ -2798,7 +2866,6 @@ function mobBuildPanel(cat){
     hint.innerHTML='ถ้าใส่แค่อันเดียว → ใช้กับทุก orientation<br>ภาพตั้ง/นอนจะเลือก frame ให้อัตโนมัติ';
     body.appendChild(hint);
     return;
-  }
 
   if(cat==='creator'){
     var dimInfo=getFCDims();
@@ -3340,6 +3407,121 @@ function mobMirrorCanvas(){
 // ── Mobile hooks — ใช้ callback แทน function redeclaration (ป้องกัน hoisting bug) ──
 // Init
 setTimeout(initMobile,150);
+
+/* ══ LANDSCAPE OVERLAY PANEL ════════════════════════════════════════ */
+var lsPanelOpen=false;
+
+function isLandscape(){
+  return mIsMobile() && window.innerWidth > window.innerHeight;
+}
+
+function initLsPanel(){
+  if(!isLandscape()) return;
+  var panel=document.getElementById('mob-ls-panel');
+  panel.style.display='flex';
+  // Build cats
+  buildLsCats();
+  buildLsPanel(mobCat);
+}
+
+function hideLsPanel(){
+  var panel=document.getElementById('mob-ls-panel');
+  if(panel) panel.style.display='none';
+  lsPanelOpen=false;
+}
+
+function toggleLsPanel(){
+  lsPanelOpen=!lsPanelOpen;
+  var panel=document.getElementById('mob-ls-panel');
+  panel.classList.toggle('open',lsPanelOpen);
+  document.getElementById('mob-ls-toggle-icon').textContent=lsPanelOpen?'⟩':'⟨';
+}
+
+function openLsPanel(){
+  lsPanelOpen=true;
+  var panel=document.getElementById('mob-ls-panel');
+  panel.classList.add('open');
+  document.getElementById('mob-ls-toggle-icon').textContent='⟩';
+}
+
+// Build category tabs inside landscape panel
+function buildLsCats(){
+  var catsEl=document.getElementById('mob-ls-cats');
+  if(!catsEl) return;
+  catsEl.innerHTML='';
+  var cats=[
+    {cat:'exposure',icon:'☀️',lbl:'Exp'},
+    {cat:'tone',icon:'📊',lbl:'Tone'},
+    {cat:'detail',icon:'🔍',lbl:'Detail'},
+    {cat:'color',icon:'🎨',lbl:'Color'},
+    {cat:'frame',icon:'🖼',lbl:'Frame'},
+    {cat:'creator',icon:'✏️',lbl:'Creator'},
+    {cat:'preset',icon:'💾',lbl:'Preset'},
+  ];
+  cats.forEach(function(c){
+    var btn=document.createElement('button');
+    btn.className='mob-cat'+(c.cat===mobCat?' on':'');
+    btn.dataset.cat=c.cat;
+    btn.style.cssText='min-width:52px;height:52px;padding:0 6px';
+    btn.innerHTML='<span class="mob-cat-icon" style="font-size:18px">'+c.icon+'</span><span class="mob-cat-lbl" style="font-size:10px">'+c.lbl+'</span>';
+    btn.onclick=function(){
+      mobCat=c.cat;
+      document.querySelectorAll('#mob-ls-cats .mob-cat').forEach(function(b){b.classList.remove('on');});
+      btn.classList.add('on');
+      buildLsPanel(c.cat);
+      if(!lsPanelOpen) openLsPanel();
+    };
+    catsEl.appendChild(btn);
+  });
+}
+
+// Build slider content in landscape panel body
+function buildLsPanel(cat){
+  mobCat=cat;
+  mobBuildPanel(cat);
+}
+
+// mobBuildPanelInto — delegates to the body-specific logic
+// Since all build logic is in mobBuildPanel now, this is unused
+
+// Handle orientation change
+function onOrientationChange(){
+  if(!mIsMobile()) return;
+  if(isLandscape()){
+    initLsPanel();
+  } else {
+    hideLsPanel();
+    // Rebuild portrait panel
+    mobBuildPanel(mobCat);
+  }
+  // Re-render canvas to new dimensions
+  setTimeout(function(){
+    var cv=document.getElementById('mob-cv');
+    if(cv){ cv.style.transform=''; cv.style.transformOrigin=''; }
+    schedRender();
+  },50);
+}
+
+window.addEventListener('resize', onOrientationChange);
+window.addEventListener('orientationchange', function(){ setTimeout(onOrientationChange,200); });
+
+// Swipe from right edge to open ls panel
+(function(){
+  var startX=0, startY=0;
+  document.addEventListener('touchstart',function(e){
+    if(!isLandscape()) return;
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(!isLandscape()) return;
+    var dx=startX-e.changedTouches[0].clientX;
+    var dy=Math.abs(e.changedTouches[0].clientY-startY);
+    if(dy>40) return; // vertical swipe
+    if(dx>60&&!lsPanelOpen) openLsPanel();          // swipe left → open
+    if(dx<-60&&lsPanelOpen) toggleLsPanel();         // swipe right → close
+  },{passive:true});
+})();
 
 /* ══ MOBILE PINCH ZOOM + PAN ════════════════════════════════════════ */
 (function(){
