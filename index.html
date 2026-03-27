@@ -1501,12 +1501,20 @@ function setActive(id){
   const f=G.files.find(f=>f.id===id);
   if(f) G.activePresetId=f.presetId;
   syncUI(); renderFS();
-  if(dz) dz.style.display='none';
-  document.getElementById('cvwrap').style.display='block';
-  document.getElementById('cvmeta').style.display='block';
-  document.getElementById('zvbar').classList.add('show');
-  schedRender();
-  MOB_CB.afterSetActive(id);
+  if(mIsMobile()){
+    // Mobile: setup canvas visibility first, then render
+    MOB_CB.afterSetActive(id);
+  } else {
+    // Desktop only
+    if(dz) dz.style.display='none';
+    const cvwrap=document.getElementById('cvwrap');
+    const cvmeta=document.getElementById('cvmeta');
+    const zvbar=document.getElementById('zvbar');
+    if(cvwrap) cvwrap.style.display='block';
+    if(cvmeta) cvmeta.style.display='block';
+    if(zvbar) zvbar.classList.add('show');
+    schedRender();
+  }
 }
 
 /* ══ PRESET HELPERS ═════════════════════════════════════════════════ */
@@ -2753,16 +2761,15 @@ function mobRenderLib(){
 /* ── Canvas preview ── */
 function mobRenderCanvas(){
   if(!mIsMobile()) return;
-  // Reset zoom when switching images
   var cv2=document.getElementById('mob-cv');
   if(cv2){ cv2.style.transform=''; cv2.style.transformOrigin=''; }
   const hasPic = G.activeId && G.files.length>0;
   document.getElementById('mob-dropzone').style.display = hasPic ? 'none' : 'flex';
-  document.getElementById('mob-cv').style.display       = hasPic ? 'block' : 'none';
+  if(cv2) cv2.style.display = hasPic ? 'block' : 'none';
   document.getElementById('mob-cvmeta').style.display   = hasPic ? 'block' : 'none';
   document.getElementById('mob-nav-prev').classList.toggle('show',G.files.length>1);
   document.getElementById('mob-nav-next').classList.toggle('show',G.files.length>1);
-  if(hasPic) schedRender();
+  if(hasPic) setTimeout(function(){ schedRender(); }, 0); // defer so display change applies first
 }
 
 /* ── Category switch ── */
