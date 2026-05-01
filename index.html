@@ -486,56 +486,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
 <div id="ctrl">
 <div id="ctrlscroll">
 
-<div class="ach open" onclick="toggleAC(this)"><span class="actitle">Exposure · Tone · Detail</span><span class="acarr">▶</span></div>
-<div class="acbody open" id="ab-etd">
-  <div class="csec">Exposure</div>
-  <div id="ab-exp"></div>
-  <div class="cdiv" style="margin:8px -14px"></div>
-  <div class="csec">Tone</div>
-  <div id="ab-tone"></div>
-  <div class="cdiv" style="margin:8px -14px"></div>
-  <div class="csec">Detail</div>
-  <div id="ab-det"></div>
-</div>
-
-<div class="ach" onclick="toggleAC(this)"><span class="actitle">Color</span><span class="acarr">▶</span></div>
-<div class="acbody" id="ab-col"></div>
-
-<div class="ach" onclick="toggleAC(this)"><span class="actitle">HDR Tone Mapping</span><span class="acarr">▶</span></div>
-<div class="acbody" id="ab-hdr">
-  <div class="hdcard">
-    <span class="hdlbl">เปิดใช้งาน</span>
-    <label class="tog"><input type="checkbox" id="hdron" onchange="patch('hdrEnabled',this.checked);schedRender()"><div class="togtr"></div><div class="togth"></div></label>
-  </div>
-  <div class="csec">Algorithm</div>
-  <div class="mbtns">
-    <button class="mbtn on" data-m="reinhard" onclick="setMBTN(this,'.mbtn[data-m]','hdrMethod')">Reinhard</button>
-    <button class="mbtn" data-m="filmic"   onclick="setMBTN(this,'.mbtn[data-m]','hdrMethod')">Filmic</button>
-    <button class="mbtn" data-m="drago"    onclick="setMBTN(this,'.mbtn[data-m]','hdrMethod')">Drago</button>
-  </div>
-</div>
-
-<div class="ach" onclick="toggleAC(this)"><span class="actitle">Color Filter</span><span class="acarr">▶</span></div>
-<div class="acbody" id="ab-filter">
-  <div class="fg" id="fgrid"></div>
-</div>
-
-<div class="ach" onclick="toggleAC(this)"><span class="actitle">LUT (.cube)</span><span class="acarr">▶</span></div>
-<div class="acbody" id="ab-lut">
-  <div class="udrop" id="lutdrop" onclick="document.getElementById('lutfile').click()">
-    Click to load .cube file<br><small style="font-size:10px;opacity:.4">Lutify · RocketStock · IWLTBAP</small>
-  </div>
-  <div class="uloaded" id="lutloaded">
-    <div style="display:flex;align-items:center;gap:7px">
-      <span class="ufn" id="lutfn">—</span>
-      <button class="ux" onclick="clearLUT()">✕</button>
-    </div>
-  </div>
-  <input type="file" id="lutfile" accept=".cube" style="display:none" onchange="loadLUT(this)">
-</div>
-
-<div class="ach" onclick="toggleAC(this)"><span class="actitle">Frame &amp; Logo</span><span class="acarr">▶</span></div>
-<div class="acbody" id="ab-frame">
+<div class="ach open" onclick="toggleAC(this)"><span class="actitle">Frame &amp; Logo</span><span class="acarr">▶</span></div>
+<div class="acbody open" id="ab-frame">
   <div class="csec">กรอบ PNG — Landscape (ภาพนอน)</div>
   <div class="udrop" id="framedrop-l" onclick="document.getElementById('framefile-l').click()">
     อัปโหลดกรอบแนวนอน<br><small style="font-size:10px;opacity:.4">PNG · ชื่อไฟล์มี land / hori</small>
@@ -643,23 +595,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
 
   <!-- Tool category tabs -->
   <div id="mob-cats">
-    <button class="mob-cat on" data-cat="exposure" onclick="mobSetCat(this)">
-      <span class="mob-cat-icon">☀️</span>
-      <span class="mob-cat-lbl">Exposure</span>
-    </button>
-    <button class="mob-cat" data-cat="tone" onclick="mobSetCat(this)">
-      <span class="mob-cat-icon">📊</span>
-      <span class="mob-cat-lbl">Tone</span>
-    </button>
-    <button class="mob-cat" data-cat="detail" onclick="mobSetCat(this)">
-      <span class="mob-cat-icon">🔍</span>
-      <span class="mob-cat-lbl">Detail</span>
-    </button>
-    <button class="mob-cat" data-cat="color" onclick="mobSetCat(this)">
-      <span class="mob-cat-icon">🎨</span>
-      <span class="mob-cat-lbl">Color</span>
-    </button>
-    <button class="mob-cat" data-cat="frame" onclick="mobSetCat(this)">
+    <button class="mob-cat on" data-cat="frame" onclick="mobSetCat(this)">
       <span class="mob-cat-icon">🖼</span>
       <span class="mob-cat-lbl">Frame</span>
     </button>
@@ -853,26 +789,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
 /* ══ SLIDER CONFIG ══════════════════════════════════════════════════ */
 const SLIDERS = [
   // [id, label, min, max, default, group-el, unit]
-  ['brightness','Brightness',-100,100,0,'ab-exp',''],
-  ['exposure',  'Exposure',  -100,100,0,'ab-exp',''],
-  ['highlights','Highlights',-100,100,0,'ab-tone',''],
-  ['shadows',   'Shadows',   -100,100,0,'ab-tone',''],
-  ['whites',    'Whites',    -100,100,0,'ab-tone',''],
-  ['blacks',    'Blacks',    -100,100,0,'ab-tone',''],
-  ['contrast',  'Contrast',  -100,100,0,'ab-det',''],
-  ['clarity',   'Clarity',     0,100,0,'ab-det',''],
-  ['sharpness', 'Sharpness',   0,100,0,'ab-det',''],
-  ['denoise',   'Noise reduction',0,100,0,'ab-det',''],
-  ['texture',   'Texture',   -100,100,0,'ab-det',''],
-  ['saturation','Saturation',-100,100,0,'ab-col',''],
-  ['vibrance',  'Vibrance',  -100,100,0,'ab-col',''],
-  ['temperature','Temperature',-100,100,0,'ab-col',''],
-  ['tint',      'Tint',      -100,100,0,'ab-col',''],
-  ['hdrstr',    'Strength',    0,100,75,'ab-hdr','%'],
-  ['hdrwp',     'White point', 1,100,30,'ab-hdr','%'],
-  ['lcstr',     'Local contrast',0,100,0,'ab-hdr',''],
-  ['micro',     'Micro detail', 0,100,0,'ab-hdr',''],
-  ['lutstr',    'LUT strength', 0,100,100,'ab-lut','%'],
   ['frameop',   'Opacity',      0,100,100,'ab-frame','%'],
 ];
 
@@ -896,15 +812,11 @@ SLIDERS.forEach(([id,lbl,mn,mx,df,parentId,unit]) => {
 });
 
 /* filter grid */
-const FILTERS=[
-  ['normal','Normal',''],['warm','Warm','fw'],['cool','Cool','fc'],
-  ['vintage','Vintage','fv'],['bw','B&W','fb'],['fade','Fade','ff'],
-  ['drama','Drama','fd'],['matte','Matte','fm'],['golden','Golden','fg2'],
-];
-document.getElementById('fgrid').innerHTML = FILTERS.map(([id,lbl,cls])=>
-  `<div class="fi${id==='normal'?' on':''}" data-fid="${id}" onclick="setFilter('${id}',this)">
-    <div class="fith ${cls}"></div><div class="finame">${lbl}</div>
-  </div>`).join('');
+const FILTERS=[];
+// document.getElementById('fgrid').innerHTML = FILTERS.map(([id,lbl,cls])=>
+//   `<div class="fi${id==='normal'?' on':''}" data-fid="${id}" onclick="setFilter('${id}',this)">
+//     <div class="fith ${cls}"></div><div class="finame">${lbl}</div>
+//   </div>`).join('');
 
 /* ══ STATE ══════════════════════════════════════════════════════════ */
 const PRESET_COLORS=['#d4872a','#1D9E75','#7F77DD','#D85A30','#378ADD','#D4537E','#639922'];
@@ -948,7 +860,7 @@ const MOB_CB={
 
 
 function defSettings(){
-  const s={filter:'normal',hdrMethod:'reinhard',hdrEnabled:false};
+  const s={};
   SLIDERS.forEach(([id,,,,df])=>s[id]=df);
   return s;
 }
@@ -1632,45 +1544,10 @@ async function exportPreset(){
   // Build preset object
   const preset={
     _type:'BatchEditPreset',
-    _version:'1.0',
+    _version:'1.1',
     name:p.name,
     color:p.color,
     created:new Date().toISOString(),
-
-    // Tone
-    tone:{
-      brightness:  s.brightness||0,
-      exposure:    s.exposure||0,
-      highlights:  s.highlights||0,
-      shadows:     s.shadows||0,
-      whites:      s.whites||0,
-      blacks:      s.blacks||0,
-      contrast:    s.contrast||0,
-      clarity:     s.clarity||0,
-      sharpness:   s.sharpness||0,
-      denoise:     s.denoise||0,
-      texture:     s.texture||0,
-    },
-
-    // Color
-    color_adj:{
-      saturation:  s.saturation||0,
-      vibrance:    s.vibrance||0,
-      temperature: s.temperature||0,
-      tint:        s.tint||0,
-      filter:      s.filter||'normal',
-    },
-
-    // HDR
-    hdr:{
-      enabled:  s.hdrEnabled||false,
-      method:   s.hdrMethod||'reinhard',
-      strength: s.hdrstr||75,
-      wp:       s.hdrwp||30,
-    },
-
-    // LUT — embed as base64
-    lut: null,
 
     // Frame — embed as base64
     frame:{
@@ -1683,21 +1560,9 @@ async function exportPreset(){
     logos: [],
   };
 
-  // Embed LUT
   const bar=document.getElementById('barinfo');
-  bar.textContent='Exporting preset… embedding LUT';
-  if(G.lutFile){
-    try{
-      preset.lut={
-        filename: G.lutFile.name,
-        strength: s.lutstr||100,
-        data:     await fileToB64(G.lutFile),
-      };
-    }catch(e){ console.warn('LUT embed failed',e); }
-  }
-
   // Embed frames
-  bar.textContent='Exporting preset… embedding frames';
+  if(bar) bar.textContent='Exporting preset… embedding frames';
   if(G.frameLFile){
     try{
       preset.frame.landscape={
@@ -1716,7 +1581,7 @@ async function exportPreset(){
   }
 
   // Embed logos
-  bar.textContent='Exporting preset… embedding logos';
+  if(bar) bar.textContent='Exporting preset… embedding logos';
   for(const logo of G.logos){
     try{
       const b64=await blobUrlToB64(logo.url);
@@ -1727,6 +1592,7 @@ async function exportPreset(){
         size:     logo.size,
         margin:   logo.margin,
         opacity:  logo.opacity,
+        blend:    logo.blend||'source-over',
       });
     }catch(e){}
   }
@@ -1741,7 +1607,7 @@ async function exportPreset(){
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  bar.textContent=`✅ Exported "${p.name}.bep"`;
+  if(bar) bar.textContent=`✅ Exported "${p.name}.bep"`;
   toast(`Exported "${p.name}.bep"`);
 }
 
@@ -1765,36 +1631,11 @@ async function loadPresetFile(input){
 
 async function applyImportedPreset(data){
   const bar=document.getElementById('barinfo');
-  bar.textContent='Importing preset…';
+  if(bar) bar.textContent='Importing preset…';
 
   // Build settings object
   const s=defSettings();
-  const t=data.tone||{};
-  const c=data.color_adj||{};
-  const h=data.hdr||{};
-
-  Object.assign(s,{
-    brightness:  t.brightness||0,
-    exposure:    t.exposure||0,
-    highlights:  t.highlights||0,
-    shadows:     t.shadows||0,
-    whites:      t.whites||0,
-    blacks:      t.blacks||0,
-    contrast:    t.contrast||0,
-    clarity:     t.clarity||0,
-    sharpness:   t.sharpness||0,
-    denoise:     t.denoise||0,
-    texture:     t.texture||0,
-    saturation:  c.saturation||0,
-    vibrance:    c.vibrance||0,
-    temperature: c.temperature||0,
-    tint:        c.tint||0,
-    filter:      c.filter||'normal',
-    hdrEnabled:  h.enabled||false,
-    hdrMethod:   h.method||'reinhard',
-    hdrstr:      h.strength||75,
-    hdrwp:       h.wp||30,
-  });
+  if(data.frame) s.frameop=data.frame.opacity||100;
 
   // Create or update preset
   const existing=G.presets.find(p=>p.name===data.name);
@@ -1814,28 +1655,9 @@ async function applyImportedPreset(data){
   }
   G.activePresetId=preset.id;
 
-  // Restore LUT
-  if(data.lut?.data){
-    bar.textContent='Importing preset… restoring LUT';
-    try{
-      const blob=b64ToBlob(data.lut.data,'application/octet-stream');
-      const file=new File([blob], data.lut.filename||'lut.cube');
-      G.lut=parseCube(await file.text());
-      G.lutFile=file;
-      // Update UI
-      const lutUrl=URL.createObjectURL(blob);
-      const lutfn=document.getElementById('lutfn');
-      if(lutfn) lutfn.textContent=data.lut.filename||'lut.cube';
-      document.getElementById('lutdrop')?.style&&(document.getElementById('lutdrop').style.display='none');
-      document.getElementById('lutloaded')?.style&&(document.getElementById('lutloaded').style.display='flex');
-      s.lutstr=data.lut.strength||100;
-      preset.settings.lutstr=s.lutstr;
-    }catch(e){ console.warn('LUT restore failed',e); }
-  }
-
   // Restore frames
   if(data.frame?.landscape?.data){
-    bar.textContent='Importing preset… restoring frames';
+    if(bar) bar.textContent='Importing preset… restoring frames';
     try{
       const blob=b64ToBlob(data.frame.landscape.data,'image/png');
       const file=new File([blob], data.frame.landscape.filename||'landscape.png');
@@ -1849,11 +1671,10 @@ async function applyImportedPreset(data){
       await loadFrameOri('p',{files:[file]});
     }catch(e){}
   }
-  if(data.frame) preset.settings.frameop=data.frame.opacity||100;
 
   // Restore logos
   if(data.logos?.length){
-    bar.textContent='Importing preset… restoring logos';
+    if(bar) bar.textContent='Importing preset… restoring logos';
     G.logos=[];
     for(const lg of data.logos){
       if(!lg.data) continue;
@@ -1863,8 +1684,8 @@ async function applyImportedPreset(data){
         await new Promise(res=>{
           const img=new Image();
           img.onload=()=>{
-            G.logos.push({id:++lid,img,url,name:lg.filename||'logo.png',
-              pos:lg.pos||'br',size:lg.size||20,margin:lg.margin||3,opacity:lg.opacity||100});
+            G.logos.push({id:++lid,img:img,url:url,name:lg.filename||'logo.png',
+              pos:lg.pos||'br',size:lg.size||20,margin:lg.margin||3,opacity:lg.opacity||100,blend:lg.blend||'source-over'});
             res();
           };
           img.onerror=res;
@@ -1876,7 +1697,7 @@ async function applyImportedPreset(data){
   }
 
   syncUI(); renderPresetBar(); renderFS(); schedRender();
-  bar.textContent=`✅ Imported preset "${preset.name}"`;
+  if(bar) bar.textContent=`✅ Imported preset "${preset.name}"`;
   toast(`Imported "${preset.name}"`);
   // Mobile: auto apply to all files
   if(mIsMobile() && G.files.length>0){
@@ -2051,88 +1872,6 @@ function showOriginal(on){
   renderPreview();
 }
 
-const FCSS={normal:'',warm:'sepia(.35) saturate(1.5) hue-rotate(-15deg) brightness(1.05)',cool:'saturate(1.25) hue-rotate(20deg) brightness(1.02)',vintage:'sepia(.5) saturate(.8) brightness(.92) contrast(1.05)',bw:'grayscale(1) contrast(1.1)',fade:'brightness(1.1) contrast(.82) saturate(.8)',drama:'contrast(1.5) saturate(1.35) brightness(.92)',matte:'contrast(.82) brightness(1.1) saturate(.82)',golden:'sepia(.45) saturate(1.9) hue-rotate(-22deg) brightness(1.1)'};
-
-// Pixel-level color filter matching CSS filter effects for WebKit
-function applyColorFilter(px, filterId){
-  if(!filterId || filterId==='normal') return;
-  for(let i=0;i<px.length;i+=4){
-    let r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255;
-    if(filterId==='bw'){
-      const l=0.2126*r+0.7152*g+0.0722*b;
-      // contrast(1.1)
-      r=g=b=Math.min(1,Math.max(0,(l-0.5)*1.1+0.5));
-    } else if(filterId==='warm'){
-      // sepia(.35) saturate(1.5) hue-rotate(-15deg) brightness(1.05)
-      [r,g,b]=applySepia(r,g,b,0.35);
-      [r,g,b]=applySaturate(r,g,b,1.5);
-      [r,g,b]=applyHueRotate(r,g,b,-15);
-      r*=1.05; g*=1.05; b*=1.05;
-    } else if(filterId==='cool'){
-      // saturate(1.25) hue-rotate(20deg) brightness(1.02)
-      [r,g,b]=applySaturate(r,g,b,1.25);
-      [r,g,b]=applyHueRotate(r,g,b,20);
-      r*=1.02; g*=1.02; b*=1.02;
-    } else if(filterId==='vintage'){
-      // sepia(.5) saturate(.8) brightness(.92) contrast(1.05)
-      [r,g,b]=applySepia(r,g,b,0.5);
-      [r,g,b]=applySaturate(r,g,b,0.8);
-      r*=0.92; g*=0.92; b*=0.92;
-      r=(r-0.5)*1.05+0.5; g=(g-0.5)*1.05+0.5; b=(b-0.5)*1.05+0.5;
-    } else if(filterId==='fade'){
-      // brightness(1.1) contrast(.82) saturate(.8)
-      r*=1.1; g*=1.1; b*=1.1;
-      r=(r-0.5)*0.82+0.5; g=(g-0.5)*0.82+0.5; b=(b-0.5)*0.82+0.5;
-      [r,g,b]=applySaturate(r,g,b,0.8);
-    } else if(filterId==='drama'){
-      // contrast(1.5) saturate(1.35) brightness(.92)
-      r=(r-0.5)*1.5+0.5; g=(g-0.5)*1.5+0.5; b=(b-0.5)*1.5+0.5;
-      [r,g,b]=applySaturate(r,g,b,1.35);
-      r*=0.92; g*=0.92; b*=0.92;
-    } else if(filterId==='matte'){
-      // contrast(.82) brightness(1.1) saturate(.82)
-      r=(r-0.5)*0.82+0.5; g=(g-0.5)*0.82+0.5; b=(b-0.5)*0.82+0.5;
-      r*=1.1; g*=1.1; b*=1.1;
-      [r,g,b]=applySaturate(r,g,b,0.82);
-    } else if(filterId==='golden'){
-      // sepia(.45) saturate(1.9) hue-rotate(-22deg) brightness(1.1)
-      [r,g,b]=applySepia(r,g,b,0.45);
-      [r,g,b]=applySaturate(r,g,b,1.9);
-      [r,g,b]=applyHueRotate(r,g,b,-22);
-      r*=1.1; g*=1.1; b*=1.1;
-    }
-    px[i]  =Math.min(255,Math.max(0,r*255+0.5)|0);
-    px[i+1]=Math.min(255,Math.max(0,g*255+0.5)|0);
-    px[i+2]=Math.min(255,Math.max(0,b*255+0.5)|0);
-  }
-}
-function applySepia(r,g,b,a){
-  return [
-    Math.min(1,r*(1-0.607*a)+g*0.769*a+b*0.189*a),
-    Math.min(1,r*0.349*a+g*(1-0.314*a)+b*0.168*a),
-    Math.min(1,r*0.272*a+g*0.534*a+b*(1-0.869*a))
-  ];
-}
-function applySaturate(r,g,b,s){
-  const l=0.2126*r+0.7152*g+0.0722*b;
-  return [l+(r-l)*s, l+(g-l)*s, l+(b-l)*s];
-}
-function applyHueRotate(r,g,b,deg){
-  const a=deg*Math.PI/180;
-  const cos=Math.cos(a), sin=Math.sin(a);
-  // Standard hue rotation matrix
-  const nr=r*(0.213+cos*0.787-sin*0.213)+g*(0.213-cos*0.213+sin*0.143)+b*(0.213-cos*0.213-sin*0.928);
-  const ng=r*(0.715-cos*0.715-sin*0.715)+g*(0.715+cos*0.285+sin*0.140)+b*(0.715-cos*0.715+sin*0.140);
-  const nb=r*(0.072-cos*0.072+sin*0.928)+g*(0.072-cos*0.072-sin*0.283)+b*(0.072+cos*0.928+sin*0.283);
-  return [Math.min(1,Math.max(0,nr)), Math.min(1,Math.max(0,ng)), Math.min(1,Math.max(0,nb))];
-}
-
-function cssFilter(s){
-  const b=1+(s.brightness||0)/100+(s.exposure||0)/100;
-  const c=1+(s.contrast||0)/100, sat=1+(s.saturation||0)/100;
-  return `brightness(${b.toFixed(3)}) contrast(${c.toFixed(3)}) saturate(${sat.toFixed(3)}) ${FCSS[s.filter||'normal']||''}`.trim();
-}
-
 function renderPreview(){
   (async()=>{
   const isMob = mIsMobile();
@@ -2191,23 +1930,10 @@ function renderPreview(){
   }
 
   const ctx=cv.getContext('2d');
-  if(G.showingOriginal){
-    cv.style.filter='none';
-    ctx.filter='none'; ctx.drawImage(img,0,0,W,H);
-  } else {
-    const filterStr=cssFilter(getFileSettings(f));
-    // ctx.filter not supported on WebKit (iOS/iPadOS) — use CSS filter on canvas instead
-    if(isMob){
-      cv.style.filter=filterStr;
-      ctx.filter='none';
-    } else {
-      cv.style.filter='none';
-      ctx.filter=filterStr;
-    }
-    ctx.drawImage(img,0,0,W,H); ctx.filter='none';
-    if(needsPx(getFileSettings(f))){const id=ctx.getImageData(0,0,W,H);processPixels(id.data,getFileSettings(f),W,H);ctx.putImageData(id,0,0);}
-    drawOverlays(ctx,W,H);
-  }
+  cv.style.filter='none';
+  ctx.filter='none';
+  ctx.drawImage(img,0,0,W,H);
+  drawOverlays(ctx,W,H);
 
   const metaEl=isMob?document.getElementById('mob-cvmeta'):document.getElementById('cvmeta');
   if(metaEl){
@@ -2218,25 +1944,9 @@ function renderPreview(){
   if(!isMob){ if(W&&G.zoom.scale===0) zoomFit(); else applyZoom(); }
   })();
 }
-function needsPx(s){
-  return s.highlights||s.shadows||s.whites||s.blacks||
-    s.hdrEnabled||
-    (G.lut&&(s.lutstr||100)>0)||(s.vibrance||0)||(s.temperature||0)||(s.tint||0)||
-    (s.lcstr||0)||(s.micro||0)||(s.clarity||0)||(s.denoise||0)||(s.texture||0);
-}
 
 /* ══ PIXEL PIPELINE ══════════════════════════════════════════════════ */
-function processPixels(px,s,W,H){
-  if(s.hdrEnabled) applyHDR(px,s.hdrstr??75,s.hdrwp??30,s.hdrMethod||'reinhard');
-  const hl=s.highlights||0,sh=s.shadows||0,wh=s.whites||0,bl=s.blacks||0;
-  if(hl||sh||wh||bl) applyTonal(px,hl,sh,wh,bl);
-  const tmp=s.temperature||0,tnt=s.tint||0,vib=s.vibrance||0;
-  if(tmp||tnt||vib) applyColor(px,tmp,tnt,vib);
-  if((s.lcstr||0)||(s.micro||0)||(s.clarity||0)) applyLC(px,(s.lcstr||0)+(s.clarity||0)*.7,s.micro||0);
-  if(s.denoise||0) applyDenoise(px,W,H,(s.denoise||0)/100);
-  if(s.texture||0) applyTexture(px,W,H,(s.texture||0)/100);
-  if(G.lut&&(s.lutstr||100)>0) applyLUT(px,G.lut,(s.lutstr||100)/100);
-}
+function processPixels(px,s,W,H){ }
 
 function applyHDR(px,str,wpPct,method){
   const s=str/100,wp=0.5+wpPct/100;
@@ -2274,122 +1984,12 @@ function applyColor(px,temp,tint,vib){
   }
 }
 
-function applyLC(px,lc,micro){
-  if(!lc&&!micro) return;
-  const lcS=lc/180,mS=micro/350;
-  for(let i=0;i<px.length;i+=4){
-    const r=px[i]/255,g=px[i+1]/255,b=px[i+2]/255;
-    const Y=0.2126*r+0.7152*g+0.0722*b,dev=Y-.5;
-    const boost=lcS*dev*1.8+mS*Math.sign(dev)*Math.pow(Math.abs(dev),.6);
-    const ratio=Y>0.001?Math.min(2,Math.max(0,(Y+boost)/Y)):1;
-    for(let c=0;c<3;c++) px[i+c]=Math.min(255,Math.round(px[i+c]*ratio));
-  }
-}
-
-/* ──── Noise Reduction (fast box blur on luma, preserve chroma) ──── */
-function applyDenoise(px,W,H,str){
-  if(str<=0) return;
-  // 3×3 box blur blended by strength
-  const tmp=new Uint8ClampedArray(px.length);
-  for(let y=0;y<H;y++){
-    for(let x=0;x<W;x++){
-      let rS=0,gS=0,bS=0,n=0;
-      for(let dy=-1;dy<=1;dy++){
-        for(let dx=-1;dx<=1;dx++){
-          const nx=x+dx,ny=y+dy;
-          if(nx<0||nx>=W||ny<0||ny>=H) continue;
-          const i=(ny*W+nx)*4;
-          rS+=px[i];gS+=px[i+1];bS+=px[i+2];n++;
-        }
-      }
-      const i=(y*W+x)*4;
-      tmp[i]  =Math.round(px[i]  *(1-str)+(rS/n)*str);
-      tmp[i+1]=Math.round(px[i+1]*(1-str)+(gS/n)*str);
-      tmp[i+2]=Math.round(px[i+2]*(1-str)+(bS/n)*str);
-      tmp[i+3]=px[i+3];
-    }
-  }
-  px.set(tmp);
-}
-
-/* ──── Texture (unsharp mask on high frequencies) ──── */
-function applyTexture(px,W,H,str){
-  if(str===0) return;
-  const abs=Math.abs(str), sign=Math.sign(str);
-  // Compute blurred version (3×3 box)
-  const blr=new Float32Array(px.length);
-  for(let y=0;y<H;y++){
-    for(let x=0;x<W;x++){
-      let rS=0,gS=0,bS=0,n=0;
-      for(let dy=-1;dy<=1;dy++){for(let dx=-1;dx<=1;dx++){
-        const nx=x+dx,ny=y+dy;
-        if(nx<0||nx>=W||ny<0||ny>=H) continue;
-        const i=(ny*W+nx)*4; rS+=px[i];gS+=px[i+1];bS+=px[i+2];n++;
-      }}
-      const i=(y*W+x)*4;
-      blr[i]=rS/n;blr[i+1]=gS/n;blr[i+2]=bS/n;
-    }
-  }
-  for(let i=0;i<px.length-3;i+=4){
-    for(let c=0;c<3;c++){
-      // high freq = original - blurred
-      const hf=px[i+c]-blr[i+c];
-      px[i+c]=Math.max(0,Math.min(255,Math.round(px[i+c]+sign*abs*1.8*hf)));
-    }
-  }
-}
-
 /* ══ LUT ══════════════════════════════════════════════════════════════ */
-async function loadLUT(input){ const f=input.files[0]; if(f) await loadLUTFile(f); }
-async function loadLUTFile(file){
-  try{
-    G.lut=parseCube(await file.text());
-    G.lutFile=file;
-    document.getElementById('lutfn').textContent=file.name;
-    document.getElementById('lutdrop').style.display='none';
-    document.getElementById('lutloaded').style.display='flex';
-    schedRender();
-  }catch(e){alert('ไม่สามารถโหลด LUT: '+e.message);}
-}
-
-function clearLUT(){
-  G.lut=null; G.lutFile=null; document.getElementById('lutfile').value='';
-  document.getElementById('lutdrop').style.display='';
-  document.getElementById('lutloaded').style.display='none';
-  schedRender();
-}
-
-function parseCube(txt){
-  const lines=txt.split('\n');let size=0;const data=[];
-  for(const raw of lines){
-    const l=raw.trim();
-    if(!l||l.startsWith('#')) continue;
-    if(l.startsWith('LUT_3D_SIZE')){size=parseInt(l.split(/\s+/)[1]);continue;}
-    if(/^(TITLE|DOMAIN|LUT_1D)/.test(l)) continue;
-    const p=l.split(/\s+/);
-    if(p.length>=3){const r=parseFloat(p[0]),g=parseFloat(p[1]),b=parseFloat(p[2]);if(!isNaN(r))data.push([r,g,b]);}
-  }
-  if(!size||data.length<size*size*size) throw new Error('ไฟล์ LUT ไม่ถูกต้อง');
-  return{size,data};
-}
-
-function applyLUT(px,lut,str){
-  const{size:sz,data}=lut,sc=sz-1;
-  for(let i=0;i<px.length;i+=4){
-    const r=px[i]/255,g=px[i+1]/255,b=px[i+2]/255;
-    const ri=Math.min(r*sc,sc),gi=Math.min(g*sc,sc),bi=Math.min(b*sc,sc);
-    const r0=Math.floor(ri),r1=Math.min(r0+1,sc);
-    const g0=Math.floor(gi),g1=Math.min(g0+1,sc);
-    const b0=Math.floor(bi),b1=Math.min(b0+1,sc);
-    const rf=ri-r0,gf=gi-g0,bf=bi-b0;
-    const idx=(r,g,b)=>r+g*sz+b*sz*sz;
-    const c=[data[idx(r0,g0,b0)],data[idx(r1,g0,b0)],data[idx(r0,g1,b0)],data[idx(r1,g1,b0)],data[idx(r0,g0,b1)],data[idx(r1,g0,b1)],data[idx(r0,g1,b1)],data[idx(r1,g1,b1)]];
-    for(let ch=0;ch<3;ch++){
-      const m=255*(c[0][ch]*(1-rf)*(1-gf)*(1-bf)+c[1][ch]*rf*(1-gf)*(1-bf)+c[2][ch]*(1-rf)*gf*(1-bf)+c[3][ch]*rf*gf*(1-bf)+c[4][ch]*(1-rf)*(1-gf)*bf+c[5][ch]*rf*(1-gf)*bf+c[6][ch]*(1-rf)*gf*bf+c[7][ch]*rf*gf*bf);
-      px[i+ch]=Math.round(px[i+ch]*(1-str)+m*str);
-    }
-  }
-}
+async function loadLUT(input){ }
+async function loadLUTFile(file){ }
+function clearLUT(){ }
+function parseCube(txt){ return {size:0,data:[]}; }
+function applyLUT(px,lut,str){ }
 
 /* ══ FRAME L/P MANAGEMENT ════════════════════════════════════════════ */
 async function loadFrameOri(ori,input){
@@ -2597,20 +2197,7 @@ async function renderFull(f,q){
       const cv=document.createElement('canvas');
       cv.width=dims.w; cv.height=dims.h;
       const ctx=cv.getContext('2d');
-      const s=getFileSettings(f);
-      // On WebKit (mobile), ctx.filter is not supported — apply everything via pixel pipeline
-      if(mIsMobile()){
-        ctx.drawImage(img,0,0,dims.w,dims.h);
-        const id=ctx.getImageData(0,0,dims.w,dims.h);
-        applyBrightnessContrastSat(id.data,s);
-        applyColorFilter(id.data, s.filter||'normal');
-        processPixels(id.data,s,dims.w,dims.h);
-        ctx.putImageData(id,0,0);
-      } else {
-        ctx.filter=cssFilter(s);
-        ctx.drawImage(img,0,0,dims.w,dims.h); ctx.filter='none';
-        if(needsPx(s)){const id=ctx.getImageData(0,0,dims.w,dims.h);processPixels(id.data,s,dims.w,dims.h);ctx.putImageData(id,0,0);}
-      }
+      ctx.drawImage(img,0,0,dims.w,dims.h);
       drawOverlays(ctx,dims.w,dims.h);
       cv.toBlob(b=>{
         if(f.id!==G.activeId) f.img=null;
@@ -2618,30 +2205,6 @@ async function renderFull(f,q){
       },'image/jpeg',q);
     }catch(e){rej(e);}
   });
-}
-
-// Pixel-level brightness/contrast/saturation matching CSS filter spec
-function applyBrightnessContrastSat(px,s){
-  // Match cssFilter formula: brightness(1 + br/100 + exp/100) contrast(1 + ct/100) saturate(1 + sat/100)
-  const bMult = 1 + (s.brightness||0)/100 + (s.exposure||0)/100; // CSS brightness = multiply
-  const cMult = 1 + (s.contrast||0)/100;   // CSS contrast = (x-0.5)*c + 0.5
-  const sMult = 1 + (s.saturation||0)/100; // CSS saturate = lerp toward gray
-  if(bMult===1 && cMult===1 && sMult===1) return; // nothing to do
-  for(let i=0;i<px.length;i+=4){
-    let r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255;
-    // Brightness (multiply)
-    r*=bMult; g*=bMult; b*=bMult;
-    // Contrast: (x - 0.5) * c + 0.5
-    r=(r-0.5)*cMult+0.5; g=(g-0.5)*cMult+0.5; b=(b-0.5)*cMult+0.5;
-    // Saturation: lerp toward luminance
-    if(sMult!==1){
-      const l=0.2126*r+0.7152*g+0.0722*b;
-      r=l+(r-l)*sMult; g=l+(g-l)*sMult; b=l+(b-l)*sMult;
-    }
-    px[i]  =Math.min(255,Math.max(0,r*255+0.5)|0);
-    px[i+1]=Math.min(255,Math.max(0,g*255+0.5)|0);
-    px[i+2]=Math.min(255,Math.max(0,b*255+0.5)|0);
-  }
 }
 
 /* ══ PYTHON BACKEND EXPORT ══════════════════════════════════════════ */
@@ -2799,15 +2362,11 @@ const IS_MOBILE=()=>window.matchMedia("(pointer:coarse)").matches||window.innerW
 
 // Category → sliders map
 const MOB_CATS={
-  exposure:['brightness','exposure'],
-  tone:['highlights','shadows','whites','blacks'],
-  detail:['contrast','clarity','sharpness','denoise'],
-  color:['saturation','vibrance','temperature','tint'],
   frame:[],   // handled separately
   creator:[], // handled separately
   preset:[],  // handled separately
 };
-let mobCat='exposure';
+let mobCat='frame';
 
 function mIsMobile(){return IS_MOBILE();}
 
@@ -3577,10 +3136,6 @@ function buildLsCats(){
     if(!catsEl) return;
     catsEl.innerHTML='';
     var cats=[
-      {cat:'exposure',icon:'☀️',lbl:'Exp'},
-      {cat:'tone',icon:'📊',lbl:'Tone'},
-      {cat:'detail',icon:'🔍',lbl:'Detail'},
-      {cat:'color',icon:'🎨',lbl:'Color'},
       {cat:'frame',icon:'🖼',lbl:'Frame'},
       {cat:'creator',icon:'✏️',lbl:'Creator'},
       {cat:'preset',icon:'💾',lbl:'Preset'},
