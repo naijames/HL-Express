@@ -426,6 +426,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
       <button class="fcpbtn"    data-r="3:2"  onclick="setFCRatio(this)">3:2</button>
       <button class="fcpbtn"    data-r="4:3"  onclick="setFCRatio(this)">4:3</button>
       <button class="fcpbtn"    data-r="16:9" onclick="setFCRatio(this)">16:9</button>
+      <button class="fcpbtn"    data-r="2:3"  onclick="setFCRatio(this)">2:3</button>
+      <button class="fcpbtn"    data-r="9:16" onclick="setFCRatio(this)">9:16</button>
       <button class="fcpbtn" id="fcpbtn-custom" data-r="custom" onclick="setFCRatioCustom(this)">Custom</button>
     </div>
     <div id="fc-custom-wrap" style="display:none;align-items:center;gap:3px">
@@ -537,7 +539,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
   <div class="csec">โลโก้ / Watermark <span style="color:var(--tx3);font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(หลายชั้นได้)</span></div>
   <div class="logolist" id="logolist"></div>
   <button class="addlogobtn" onclick="document.getElementById('logofile-add').click()">+ เพิ่มโลโก้</button>
-  <input type="file" id="logofile-add" accept="image/png,image/webp" style="display:none" onchange="addLogo(this)">
+  <input type="file" id="logofile-add" accept="image/png,image/webp" multiple style="display:none" onchange="addLogo(this)">
 </div>
 
 </div><!-- ctrlscroll -->
@@ -666,11 +668,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
       </label>
     </div>
     <!-- Size -->
-    <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:8px">ขนาดรูป</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+    <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:8px">ขนาดรูป (ด้านยาวที่สุด)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
       <button class="mob-exp-sizebtn on" data-sz="orig"   onclick="mobExpSize(this)">Original</button>
-      <button class="mob-exp-sizebtn"    data-sz="2048"   onclick="mobExpSize(this)">2048</button>
-      <button class="mob-exp-sizebtn"    data-sz="1920"   onclick="mobExpSize(this)">1920</button>
+      <button class="mob-exp-sizebtn"    data-sz="1080"   onclick="mobExpSize(this)">1080 px</button>
+      <button class="mob-exp-sizebtn"    data-sz="1920"   onclick="mobExpSize(this)">1920 px</button>
+      <button class="mob-exp-sizebtn"    data-sz="2048"   onclick="mobExpSize(this)">2048 px</button>
+      <button class="mob-exp-sizebtn"    data-sz="2560"   onclick="mobExpSize(this)">2560 px</button>
       <button class="mob-exp-sizebtn"    data-sz="custom" onclick="mobExpSize(this)">Custom</button>
     </div>
     <div id="mob-exp-custsize" style="display:none;align-items:center;gap:8px;margin-bottom:8px">
@@ -699,10 +703,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35);box-shadow:0
   <div class="exsize">
     <span class="exlbl" style="color:var(--tx2);font-weight:500">Export size</span>
     <button class="szbtn on" data-sz="orig"   onclick="setSzBtn(this)">Original</button>
+    <button class="szbtn"    data-sz="1080"   onclick="setSzBtn(this)">1080</button>
+    <button class="szbtn"    data-sz="1920"   onclick="setSzBtn(this)">1920</button>
     <button class="szbtn"    data-sz="2048"   onclick="setSzBtn(this)">2048</button>
     <button class="szbtn"    data-sz="custom" onclick="setSzBtn(this)">Custom</button>
     <div class="szcust" id="szcust">
-      <input class="szin" id="szlong" type="number" placeholder="Long side" min="1" max="99999" value="3000" style="width:58px">
+      <input class="szin" id="szlong" type="number" placeholder="Side" min="100" max="9999" value="2048" style="width:52px">
       <span style="font-size:10px;color:var(--tx3)">px</span>
     </div>
   </div>
@@ -837,6 +843,8 @@ const G={
   outputFileHandles:[], // FileSystemFileHandle entries for direct save
   presets:[],          // [{id,name,color,settings}]
   activePresetId:1,    // preset shown in panel
+  logoInt:{id:null,type:null,sx:0,sy:0,slx:0,sly:0,ssz:0}, // interaction state
+  selectedLogoId:null, // current active logo
 };
 let fid=0,lid=0,pid=0;
 // ── Safe mobile callbacks — called from original functions directly ──
@@ -983,27 +991,150 @@ document.getElementById('cva').addEventListener('wheel',e=>{
   applyZoom();
 },{passive:false});
 
-// Pan with mouse drag
+// Interactive Canvas Logic (Logo dragging/resizing + Panning)
 (()=>{
   const area=document.getElementById('cva');
-  let dragging=false,sx=0,sy=0,sox=0,soy=0;
+  const cv=document.getElementById('maincanvas');
+  let panning=false, sx=0, sy=0, sox=0, soy=0;
+
+  function getMouseCanvas(e){
+    const rect=cv.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) / G.zoom.scale,
+      y: (e.clientY - rect.top) / G.zoom.scale
+    };
+  }
+
   area.addEventListener('mousedown',e=>{
     if(e.target.id==='dropzone'||e.target.closest('#dropzone')) return;
-    if(!G.activeId&&!G.frameMode) return;
-    dragging=true; sx=e.clientX; sy=e.clientY; sox=G.zoom.ox; soy=G.zoom.oy;
-    document.getElementById('maincanvas').classList.add('panning');
-    e.preventDefault();
+    if(!G.activeId && !G.frameMode) return;
+
+    const m=getMouseCanvas(e);
+    const W=cv.width, H=cv.height;
+    
+    // Check logos for hits (top to bottom)
+    for(let i=G.logos.length-1; i>=0; i--){
+      const l=G.logos[i];
+      if(l.mode!=='pos') continue; // Fit/Fill are automatic
+      
+      const {lx, ly, lw, lh} = getLogoLayout(l, W, H);
+      
+      // Hit resize handle (bottom-right)
+      const hr=8 / G.zoom.scale; // handle radius
+      if(m.x > lx+lw-hr && m.x < lx+lw+hr && m.y > ly+lh-hr && m.y < ly+lh+hr){
+        G.logoInt={id:l.id, type:'resize', sx:e.clientX, sy:e.clientY, slx:lx, sly:ly, ssz:l.size};
+        G.selectedLogoId=l.id;
+        document.body.style.cursor='nwse-resize';
+        schedRender();
+        return;
+      }
+      
+      // Hit body
+      if(m.x >= lx && m.x <= lx+lw && m.y >= ly && m.y <= ly+lh){
+        G.logoInt={id:l.id, type:'move', sx:e.clientX, sy:e.clientY, slx:l.x, sly:l.y};
+        if(l.mode==='fit'){
+          l.mode='pos'; l.size=100; l.margin=0;
+          l.x=lx/W*100; l.y=ly/H*100; G.logoInt.slx=l.x; G.logoInt.sly=l.y;
+          renderLogoList(); toggleLogoBody(l.id);
+        } else if(l.x===null){ 
+          l.x=lx/W*100; l.y=ly/H*100; G.logoInt.slx=l.x; G.logoInt.sly=l.y; 
+          renderLogoList(); toggleLogoBody(l.id);
+        }
+        document.body.style.cursor='move';
+        document.getElementById('logibody-'+l.id)?.classList.remove('hide');
+        schedRender();
+        return;
+      }
+    }
+
+    // No logo hit
+    if(G.selectedLogoId!==null){ G.selectedLogoId=null; schedRender(); }
+    panning=true; sx=e.clientX; sy=e.clientY; sox=G.zoom.ox; soy=G.zoom.oy;
+    cv.classList.add('panning');
   });
+
   document.addEventListener('mousemove',e=>{
-    if(!dragging) return;
-    G.zoom.ox=sox+(e.clientX-sx); G.zoom.oy=soy+(e.clientY-sy);
-    applyZoom();
+    if(G.logoInt.id){
+      const l=G.logos.find(lg=>lg.id===G.logoInt.id);
+      const dx=e.clientX - G.logoInt.sx, dy=e.clientY - G.logoInt.sy;
+      const W=cv.width, H=cv.height;
+      
+      if(G.logoInt.type==='move'){
+        l.x = G.logoInt.slx + (dx / G.zoom.scale / W * 100);
+        l.y = G.logoInt.sly + (dy / G.zoom.scale / H * 100);
+        // Update sidebar label
+        const pl=document.getElementById(`lv-pos-${l.id}`);
+        if(pl) pl.textContent = Math.round(l.x)+'% , '+Math.round(l.y)+'%';
+      } else if(G.logoInt.type==='resize'){
+        const short=Math.min(W, H);
+        const addedSize = (dx / G.zoom.scale / short * 100);
+        l.size = Math.max(3, Math.min(100, G.logoInt.ssz + addedSize));
+        const sl=document.querySelector(`#logi-${l.id} input[oninput*="size"]`);
+        if(sl){ sl.value=l.size; const vl=document.getElementById(`lv-size-${l.id}`); if(vl) vl.textContent=Math.round(l.size)+'%'; }
+      }
+      schedRender();
+      return;
+    }
+    
+    if(panning){
+      G.zoom.ox=sox+(e.clientX-sx); G.zoom.oy=soy+(e.clientY-sy);
+      applyZoom();
+      return;
+    }
+
+    // Hover detection
+    if(!G.activeId && !G.frameMode) return;
+    const m=getMouseCanvas(e);
+    const W=cv.width, H=cv.height;
+    let hit=false;
+    for(let i=G.logos.length-1; i>=0; i--){
+      const l=G.logos[i];
+      if(l.mode!=='pos') continue;
+      const {lx, ly, lw, lh} = getLogoLayout(l, W, H);
+      const hr=8 / G.zoom.scale;
+      if(m.x > lx+lw-hr && m.x < lx+lw+hr && m.y > ly+lh-hr && m.y < ly+lh+hr){
+        cv.style.cursor='nwse-resize'; hit=true; break;
+      }
+      if(m.x >= lx && m.x <= lx+lw && m.y >= ly && m.y <= ly+lh){
+        cv.style.cursor='move'; hit=true; break;
+      }
+    }
+    if(!hit) cv.style.cursor='';
   });
+
   document.addEventListener('mouseup',()=>{
-    dragging=false;
-    document.getElementById('maincanvas').classList.remove('panning');
+    G.logoInt={id:null,type:null};
+    panning=false;
+    cv.classList.remove('panning');
+    document.body.style.cursor='';
   });
 })();
+
+function getLogoLayout(l, W, H){
+  let lx, ly, lw, lh;
+  if(l.mode==='fit'){
+    const sc=Math.min(W/l.img.naturalWidth, H/l.img.naturalHeight);
+    lw=Math.round(l.img.naturalWidth*sc);
+    lh=Math.round(l.img.naturalHeight*sc);
+    // Smart Fit Alignment: respects 9-point grid
+    const vp=l.pos[0], hp=l.pos[1];
+    lx = hp==='l' ? 0 : hp==='c' ? Math.round((W-lw)/2) : W-lw;
+    ly = vp==='t' ? 0 : vp==='m' ? Math.round((H-lh)/2) : H-lh;
+  } else {
+    const short=Math.min(W,H);
+    lw=Math.round(short*l.size/100);
+    lh=Math.round(lw*l.img.naturalHeight/l.img.naturalWidth);
+    if(l.x!==null && l.y!==null){
+      lx=Math.round(W*l.x/100); ly=Math.round(H*l.y/100);
+    } else {
+      const m=Math.round(short*l.margin/100);
+      const vp=l.pos[0], hp=l.pos[1];
+      lx=hp==='l'?m:hp==='c'?Math.round((W-lw)/2):W-lw-m;
+      ly=vp==='t'?m:vp==='m'?Math.round((H-lh)/2):H-lh-m;
+    }
+  }
+  return {lx, ly, lw, lh};
+}
 
 /* ══ FRAME CREATOR MODE ═════════════════════════════════════════════ */
 function toggleFrameMode(){
@@ -1105,17 +1236,19 @@ function getFCDims(){
 const POS_LABELS={tl:'↖',tc:'↑',tr:'↗',ml:'←',mc:'·',mr:'→',bl:'↙',bc:'↓',br:'↘'};
 
 function addLogo(input){
-  const file=input.files[0]; if(!file) return;
+  const files=Array.from(input.files); if(!files.length) return;
   input.value='';
-  const url=URL.createObjectURL(file);
-  const img=new Image();
-  img.onload=()=>{
-    const logo={id:++lid,img,url,name:file.name,pos:'mc',size:20,margin:3,opacity:100,blend:'source-over'};
-    G.logos.push(logo);
-    renderLogoList();
-    schedRender();
-  };
-  img.src=url;
+  files.forEach(file=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      const logo={id:++lid,img,url,name:file.name,mode:'pos',pos:'mc',size:20,margin:3,x:null,y:null,opacity:100,blend:'source-over'};
+      G.logos.push(logo);
+      renderLogoList();
+      schedRender();
+    };
+    img.src=url;
+  });
 }
 
 function removeLogo(id){
@@ -1135,18 +1268,35 @@ function renderLogoList(){
         <button class="ux" onclick="event.stopPropagation();removeLogo(${l.id})" style="font-size:12px">✕</button>
       </div>
       <div class="logibody hide" id="logibody-${l.id}">
-        <div class="csec">ตำแหน่ง</div>
-        <div class="posgrid">
-          ${Object.entries(POS_LABELS).map(([p,lbl])=>`<div class="poscell${l.pos===p?' on':''}" onclick="setLogoPos(${l.id},'${p}')">${lbl}</div>`).join('')}
-        </div>
         <div class="cg">
-          <div class="crow"><span class="cname">ขนาด</span><span class="cval" id="lv-size-${l.id}">${l.size}%</span></div>
-          <input type="range" min="3" max="60" value="${l.size}" oninput="setLogoProp(${l.id},'size',+this.value,'lv-size-${l.id}','%')">
+          <div class="crow">
+            <span class="cname">ตำแหน่ง</span>
+            <span class="cval" id="lv-pos-${l.id}" style="font-size:10px">${l.x!==null?Math.round(l.x)+'% , '+Math.round(l.y)+'%':l.mode==='fit'?'Aligned':'Snapped'}</span>
+          </div>
+          <div class="posgrid">
+            ${Object.entries(POS_LABELS).map(([p,lbl])=>`<div class="poscell${l.pos===p && l.x===null?' on':''}" onclick="setLogoPos(${l.id},'${p}')">${lbl}</div>`).join('')}
+          </div>
         </div>
-        <div class="cg">
-          <div class="crow"><span class="cname">Margin</span><span class="cval" id="lv-mgn-${l.id}">${l.margin}%</span></div>
-          <input type="range" min="0" max="15" value="${l.margin}" oninput="setLogoProp(${l.id},'margin',+this.value,'lv-mgn-${l.id}','%')">
+        
+        <div id="logi-ctrls-${l.id}">
+          <div class="cg">
+            <div class="crow">
+              <span class="cname">ขนาด</span>
+              <button onclick="toggleLogoFit(${l.id})"
+                style="height:20px;font-size:10px;padding:0 8px;line-height:1;font-weight:800;border-radius:4px;border:none;cursor:pointer;transition:all .15s;
+                ${l.mode==='fit' ? 'background:var(--acc);color:#180d00;' : 'background:var(--b3);color:var(--tx);'}">
+                ${l.mode==='fit'?'RESET':'FIT'}
+              </button>
+              <span class="cval" id="lv-size-${l.id}">${Math.round(l.size)}%</span>
+            </div>
+            <input type="range" min="3" max="100" value="${l.size}" oninput="setLogoProp(${l.id},'size',+this.value,'lv-size-${l.id}','%'); if(G.logos.find(x=>x.id===${l.id}).mode==='fit') setLogoProp(${l.id},'mode','pos','','')">
+          </div>
+          <div class="cg" style="${l.x!==null?'display:none':''}">
+            <div class="crow"><span class="cname">Margin</span><span class="cval" id="lv-mgn-${l.id}">${l.margin}%</span></div>
+            <input type="range" min="0" max="15" value="${l.margin}" oninput="setLogoProp(${l.id},'margin',+this.value,'lv-mgn-${l.id}','%'); if(G.logos.find(x=>x.id===${l.id}).mode==='fit') setLogoProp(${l.id},'mode','pos','','')">
+          </div>
         </div>
+
         <div class="cg">
           <div class="crow"><span class="cname">Opacity</span><span class="cval" id="lv-op-${l.id}">${l.opacity}%</span></div>
           <input type="range" min="0" max="100" value="${l.opacity}" oninput="setLogoProp(${l.id},'opacity',+this.value,'lv-op-${l.id}','%')">
@@ -1167,15 +1317,28 @@ function toggleLogoBody(id){
 
 function setLogoPos(id,pos){
   const l=G.logos.find(l=>l.id===id); if(!l) return;
-  l.pos=pos;
-  // Update UI
-  document.querySelectorAll(`#logi-${id} .poscell`).forEach(c=>c.classList.toggle('on',c.getAttribute('onclick').includes(`'${pos}'`)));
+  l.pos=pos; l.x=null; l.y=null;
+  renderLogoList(); toggleLogoBody(id);
   schedRender();
+}
+
+function toggleLogoFit(id){
+  const l=G.logos.find(x=>x.id===id); if(!l) return;
+  if(l.mode==='fit'){
+    l.mode='pos'; l.size=20; l.margin=3; l.pos='mc'; l.x=null; l.y=null;
+  } else {
+    l.mode='fit'; l.size=100; l.margin=0; l.x=null; l.y=null;
+  }
+  renderLogoList(); toggleLogoBody(id); schedRender();
 }
 
 function setLogoProp(id,key,val,valElId,unit){
   const l=G.logos.find(l=>l.id===id); if(!l) return;
   l[key]=val;
+  if(key==='mode'){ 
+    if(val==='fit'){ l.size=100; l.margin=0; l.x=null; l.y=null; }
+    renderLogoList(); toggleLogoBody(id); 
+  }
   const el=document.getElementById(valElId); if(el) el.textContent=val+unit;
   schedRender();
 }
@@ -1235,7 +1398,7 @@ document.addEventListener('drop',e=>{
       Array.from(files).forEach(f=>{
         const url=URL.createObjectURL(f);
         const img=new Image();
-        img.onload=()=>{G.logos.push({id:++lid,img,url,name:f.name,pos:'mc',size:20,margin:3,opacity:100,blend:'source-over'});renderLogoList();schedRender();};
+        img.onload=()=>{G.logos.push({id:++lid,img,url,name:f.name,mode:'pos',pos:'mc',size:20,margin:3,x:null,y:null,opacity:100,blend:'source-over'});renderLogoList();schedRender();};
         img.src=url;
       });
     }
@@ -1279,7 +1442,7 @@ function setupLogoBtnDrop(){
     Array.from(e.dataTransfer?.files||[]).forEach(f=>{
       const url=URL.createObjectURL(f);
       const img=new Image();
-      img.onload=()=>{G.logos.push({id:++lid,img,url,name:f.name,pos:'mc',size:20,margin:3,opacity:100,blend:'source-over'});renderLogoList();schedRender();};
+      img.onload=()=>{G.logos.push({id:++lid,img,url,name:f.name,mode:'pos',pos:'mc',size:20,margin:3,x:null,y:null,opacity:100,blend:'source-over'});renderLogoList();schedRender();};
       img.src=url;
     });
   });
@@ -1588,9 +1751,12 @@ async function exportPreset(){
       preset.logos.push({
         filename: logo.name,
         data:     b64,
+        mode:     logo.mode||'pos',
         pos:      logo.pos,
         size:     logo.size,
         margin:   logo.margin,
+        x:        logo.x,
+        y:        logo.y,
         opacity:  logo.opacity,
         blend:    logo.blend||'source-over',
       });
@@ -1685,7 +1851,9 @@ async function applyImportedPreset(data){
           const img=new Image();
           img.onload=()=>{
             G.logos.push({id:++lid,img:img,url:url,name:lg.filename||'logo.png',
-              pos:lg.pos||'br',size:lg.size||20,margin:lg.margin||3,opacity:lg.opacity||100,blend:lg.blend||'source-over'});
+              mode:lg.mode||'pos',pos:lg.pos||'br',size:lg.size||20,margin:lg.margin||3,
+              x:lg.x??null, y:lg.y??null,
+              opacity:lg.opacity||100,blend:lg.blend||'source-over'});
             res();
           };
           img.onerror=res;
@@ -2036,7 +2204,7 @@ async function loadOvFile_frame(ori,file){
 async function loadOv(type,input){ if(type==='frame') return; }
 function clearOv(type){ if(type==='frame') return; }
 
-function drawOverlays(ctx,W,H){
+function drawOverlays(ctx,W,H,isExport=false){
   const isLand=W>=H;
   const frameImg=isLand?(G.frameLImg||G.framePImg):(G.framePImg||G.frameLImg);
   if(frameImg){
@@ -2048,17 +2216,32 @@ function drawOverlays(ctx,W,H){
     ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
   }
   G.logos.forEach(l=>{
-    const short=Math.min(W,H);
-    const lw=Math.round(short*l.size/100);
-    const lh=Math.round(lw*l.img.naturalHeight/l.img.naturalWidth);
-    const m=Math.round(short*l.margin/100);
-    const vp=l.pos[0],hp=l.pos[1];
-    const lx=hp==='l'?m:hp==='c'?Math.round((W-lw)/2):W-lw-m;
-    const ly=vp==='t'?m:vp==='m'?Math.round((H-lh)/2):H-lh-m;
+    const {lx, ly, lw, lh} = getLogoLayout(l, W, H);
+    
     ctx.globalAlpha=l.opacity/100;
     ctx.globalCompositeOperation=l.blend||'source-over';
     ctx.drawImage(l.img,lx,ly,lw,lh);
     ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+
+    // Selection UI (UI only, never on export)
+    if(!isExport){
+      const isAct = G.logoInt.id === l.id;
+      const isSel = G.selectedLogoId === l.id;
+      if(isAct || isSel){
+        ctx.save();
+        ctx.strokeStyle = isAct ? 'var(--acc)' : 'rgba(212,135,42,0.4)';
+        ctx.setLineDash(isAct ? [] : [4,4]);
+        ctx.lineWidth = 1 / G.zoom.scale;
+        ctx.strokeRect(lx-0.5, ly-0.5, lw+1, lh+1);
+        
+        if(isAct && G.logoInt.type!=='move'){
+          const hr = 6 / G.zoom.scale;
+          ctx.fillStyle = 'var(--acc)';
+          ctx.fillRect(lx+lw-hr/2, ly+lh-hr/2, hr, hr);
+        }
+        ctx.restore();
+      }
+    }
   });
 }
 
@@ -2073,7 +2256,7 @@ async function batchExport(){
     const cv=document.createElement('canvas');
     cv.width=fW; cv.height=fH;
     const ctx=cv.getContext('2d');
-    ctx.clearRect(0,0,fW,fH); drawOverlays(ctx,fW,fH);
+    ctx.clearRect(0,0,fW,fH); drawOverlays(ctx,fW,fH,true);
     cv.toBlob(async b=>{
       if(mIsMobile()&&navigator.share&&navigator.canShare){
         const file=new File([b],'frame_'+fW+'x'+fH+'.png',{type:'image/png'});
@@ -2198,7 +2381,7 @@ async function renderFull(f,q){
       cv.width=dims.w; cv.height=dims.h;
       const ctx=cv.getContext('2d');
       ctx.drawImage(img,0,0,dims.w,dims.h);
-      drawOverlays(ctx,dims.w,dims.h);
+      drawOverlays(ctx,dims.w,dims.h,true);
       cv.toBlob(b=>{
         if(f.id!==G.activeId) f.img=null;
         b?res(b):rej(new Error('Blob error'));
@@ -2292,7 +2475,7 @@ async function runPythonExport(files, exportSettings){
     });
 
     const logoLayers=logoServerPaths.map(l=>({
-      server_path:l.serverPath||'', pos:l.pos, size:l.size, margin:l.margin, opacity:l.opacity
+      server_path:l.serverPath||'', mode:l.mode||'pos', pos:l.pos, size:l.size, margin:l.margin, opacity:l.opacity
     }));
 
     const jobBody={
@@ -2562,7 +2745,7 @@ function mobBuildPanelInto(cat, body){
     ratioRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
     var ratioSel=document.createElement('select');
     ratioSel.style.cssText='flex:1;height:40px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;color:#fff;font-size:14px;padding:0 12px;outline:none';
-    var ratioOpts=[['1:1','1:1'],['3:2','3:2 Landscape'],['2:3','2:3 Portrait'],['4:3','4:3'],['3:4','3:4'],['16:9','16:9'],['9:16','9:16'],['Custom','Custom']];
+    var ratioOpts=[['1:1','1:1'],['3:2','3:2 Landscape'],['2:3','2:3 Portrait'],['4:3','4:3'],['3:4','3:4'],['16:9','16:9'],['9:16','9:16 Story'],['Custom','Custom']];
     var curRatio=G.fcRatio.w+':'+G.fcRatio.h;
     var hasMatch=false;
     ratioOpts.forEach(function(rv){
@@ -2680,38 +2863,66 @@ function mobBuildPanelInto(cat, body){
       lDel.onclick=(function(lid){ return function(){ removeLogo(lid); mobBuildPanel('creator'); }; })(l.id);
       topRow2.appendChild(limg); topRow2.appendChild(lname); topRow2.appendChild(lDel);
       lr.appendChild(topRow2);
+
+      // Position grid
+      var pGridHd=document.createElement('div');
+      pGridHd.style.cssText='display:flex;justify-content:space-between;margin-bottom:4px';
+      var pGridLbl=document.createElement('span'); pGridLbl.style.cssText='font-size:11px;color:rgba(255,255,255,.4)'; pGridLbl.textContent='ตำแหน่ง';
+      var pGridVal=document.createElement('span'); pGridVal.style.cssText='font-size:10px;color:#ff9f0a;font-family:monospace';
+      pGridVal.textContent=(l.x!==null?Math.round(l.x)+'% , '+Math.round(l.y)+'%':l.mode==='fit'?'Aligned':'Snapped');
+      pGridHd.appendChild(pGridLbl); pGridHd.appendChild(pGridVal); lr.appendChild(pGridHd);
+
       var pgrid=document.createElement('div');
       pgrid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:4px';
       ['tl','tc','tr','ml','mc','mr','bl','bc','br'].forEach(function(pos){
         var pb=document.createElement('button');
-        var isOn=(l.pos===pos);
+        var isOn=(l.pos===pos && l.x===null);
         pb.style.cssText='height:32px;border-radius:6px;font-size:16px;cursor:pointer;border:1px solid '+(isOn?'#ff9f0a':'#3a3a3c')+';background:'+(isOn?'rgba(212,135,42,.2)':'#1c1c1e')+';color:'+(isOn?'#ff9f0a':'rgba(255,255,255,.45)');
         pb.textContent=posIcons2[pos];
         pb.onclick=(function(lid,p){ return function(){
-          var lo=G.logos.find(function(x){return x.id===lid;});
-          if(lo){ lo.pos=p; schedRender(); mobBuildPanel('creator'); }
+          setLogoPos(lid,p);
+          mobBuildPanel('creator');
         }; })(l.id,pos);
         pgrid.appendChild(pb);
       });
       lr.appendChild(pgrid);
+
       // Size / Margin / Opacity / Blend sliders
       var BLENDS2=[['source-over','Normal'],['multiply','Multiply'],['screen','Screen'],['overlay','Overlay'],['soft-light','Soft Light'],['darken','Darken'],['lighten','Lighten']];
-      [
-        {key:'size',label:'Size',min:3,max:60,unit:'%'},
+      var SL_OPTS=[
+        {key:'size',label:'Size',min:3,max:100,unit:'%', hasFit:true},
         {key:'margin',label:'Margin',min:0,max:15,unit:'%'},
         {key:'opacity',label:'Opacity',min:0,max:100,unit:'%'}
-      ].forEach(function(cfg){
+      ];
+
+      SL_OPTS.forEach(function(cfg){
+        if(cfg.key==='margin' && l.x!==null) return;
         var sr=document.createElement('div'); sr.style.cssText='margin-top:8px';
-        var sh=document.createElement('div'); sh.style.cssText='display:flex;justify-content:space-between;margin-bottom:4px';
+        var sh=document.createElement('div'); sh.style.cssText='display:flex;justify-content:space-between;margin-bottom:4px;align-items:center';
+        var lblGroup=document.createElement('div'); lblGroup.style.cssText='display:flex;align-items:center;gap:6px';
         var sl2=document.createElement('span'); sl2.style.cssText='font-size:12px;color:rgba(255,255,255,.5)'; sl2.textContent=cfg.label;
+        lblGroup.appendChild(sl2);
+        if(cfg.hasFit){
+          var fb=document.createElement('button');
+          var isFit=(l.mode==='fit');
+          fb.style.cssText='height:20px;font-size:10px;padding:0 8px;border-radius:4px;border:none;font-weight:800;cursor:pointer;'+
+            (isFit ? 'background:#ff9f0a;color:#000;' : 'background:#3a3a3c;color:#fff;');
+          fb.textContent=isFit?'RESET':'FIT';
+          fb.onclick=function(){ toggleLogoFit(l.id); mobBuildPanel('creator'); };
+          lblGroup.appendChild(fb);
+        }
         var sv2=document.createElement('span'); sv2.style.cssText='font-size:12px;color:#ff9f0a;font-family:monospace';
-        sv2.textContent=l[cfg.key]+cfg.unit;
-        sh.appendChild(sl2); sh.appendChild(sv2); sr.appendChild(sh);
+        sv2.textContent=Math.round(l[cfg.key])+cfg.unit;
+        sh.appendChild(lblGroup); sh.appendChild(sv2); sr.appendChild(sh);
         var si2=document.createElement('input'); si2.className='mob-sl'; si2.type='range';
         si2.min=cfg.min; si2.max=cfg.max; si2.value=l[cfg.key];
         si2.oninput=(function(lid,k,vEl,u){ return function(){
           var lo=G.logos.find(function(x){return x.id===lid;});
-          if(lo){ lo[k]=parseInt(this.value); vEl.textContent=lo[k]+u; schedRender(); }
+          if(lo){ 
+            lo[k]=parseInt(this.value); vEl.textContent=lo[k]+u; 
+            if(lo.mode==='fit') { lo.mode='pos'; mobBuildPanel('creator'); }
+            schedRender(); 
+          }
         }; })(l.id,cfg.key,sv2,cfg.unit);
         sr.appendChild(si2); lr.appendChild(sr);
       });
@@ -2740,12 +2951,15 @@ function mobBuildPanelInto(cat, body){
     var logoInp=document.createElement('input');
     logoInp.type='file'; logoInp.id='mob-logo-inp';
     logoInp.accept='image/png,image/webp'; logoInp.style.display='none';
+    logoInp.multiple=true;
     logoInp.onchange=function(){
-      if(!this.files[0]) return;
-      var url=URL.createObjectURL(this.files[0]); var f=this.files[0];
-      var img=new Image();
-      img.onload=function(){ G.logos.push({id:++lid,img:img,url:url,name:f.name,pos:'br',size:20,margin:3,opacity:100,blend:'source-over'}); renderLogoList(); schedRender(); mobBuildPanel('creator'); };
-      img.src=url;
+      const files=Array.from(this.files); if(!files.length) return;
+      files.forEach(file=>{
+        var url=URL.createObjectURL(file);
+        var img=new Image();
+        img.onload=function(){ G.logos.push({id:++lid,img:img,url:url,name:file.name,mode:'pos',pos:'mc',size:20,margin:3,x:null,y:null,opacity:100,blend:'source-over'}); renderLogoList(); schedRender(); mobBuildPanel('creator'); };
+        img.src=url;
+      });
     };
     logoSec.appendChild(logoInp); wrap.appendChild(logoSec);
     // Export
@@ -2988,8 +3202,7 @@ async function runMobExport(){
 
   // Get long side from size selection
   var longSide=0;
-  if(mobExpSz==='2048') longSide=2048;
-  else if(mobExpSz==='1920') longSide=1920;
+  if(!isNaN(parseInt(mobExpSz))) longSide=parseInt(mobExpSz);
   else if(mobExpSz==='custom'){
     longSide=parseInt(document.getElementById('mob-exp-custinp').value)||1500;
   }
@@ -3046,14 +3259,21 @@ function syncMobSizeToDesktop(longSide){
   if(longSide===0){
     var origBtn=document.querySelector('.szbtn[data-sz="orig"]');
     if(origBtn) origBtn.classList.add('on');
-  } else if(longSide===2048){
-    var b2=document.querySelector('.szbtn[data-sz="2048"]');
-    if(b2) b2.classList.add('on');
+  } else if([1080, 1920, 2048, 2560].includes(longSide)){
+    var btn=document.querySelector('.szbtn[data-sz="'+longSide+'"]');
+    if(btn) btn.classList.add('on');
+    else {
+      // fallback to custom if preset button not found on desktop
+      var custBtn=document.querySelector('.szbtn[data-sz="custom"]');
+      if(custBtn) custBtn.classList.add('on');
+      var custIn=document.getElementById('szlong');
+      if(custIn) custIn.value=longSide;
+    }
   } else {
     // custom
     var custBtn=document.querySelector('.szbtn[data-sz="custom"]');
     if(custBtn) custBtn.classList.add('on');
-    var custIn=document.getElementById('szval');
+    var custIn=document.getElementById('szlong');
     if(custIn) custIn.value=longSide;
   }
 }
